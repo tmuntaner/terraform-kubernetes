@@ -1,5 +1,8 @@
 # Kubernetes with Terraform and AWS
 
+**Prerequisites:**
+
+* Install Cloudflare's PKI and TLS Toolkit [CFSSL](https://github.com/cloudflare/cfssl).
 
 **TODO:**
 
