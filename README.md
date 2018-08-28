@@ -1,9 +1,9 @@
 # Kubernetes with Terraform and AWS
 
+
 **TODO:**
 
 * move to AWS Ireland and spread cluster over 3 subnets
-* kubernetes 1.11
 * break out etcd cluster from controller
 * add AWS cloud provider
 * nginx ingress
