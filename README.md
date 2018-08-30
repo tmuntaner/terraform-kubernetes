@@ -6,7 +6,6 @@
 
 **TODO:**
 
-* move to AWS Ireland and spread cluster over 3 subnets
 * add AWS cloud provider
 * nginx ingress
 * generate worker node configuration on demand

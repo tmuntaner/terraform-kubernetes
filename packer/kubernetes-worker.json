@@ -33,6 +33,7 @@
             "type": "shell",
             "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
             "inline": [
+                "echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/50-router.conf",
                 "zypper --no-gpg-checks --non-interactive in socat conntrack-tools ipset",
                 "wget -q https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.11.1/crictl-v1.11.1-linux-amd64.tar.gz",
                 "wget -q https://storage.googleapis.com/kubernetes-the-hard-way/runsc",

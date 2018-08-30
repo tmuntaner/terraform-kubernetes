@@ -25,13 +25,13 @@ data "aws_availability_zones" "available" {
 module "vpc" {
   source     = "./vpc"
   cidr_block = "${var.vpc_cidr}"
-  azs        = "${slice(data.aws_availability_zones.available.names, 0, 2)}"
+  azs        = "${slice(data.aws_availability_zones.available.names, 0, 1)}"
   aws_region = "${data.aws_region.current.name}"
 }
 
 module "cluster" {
   source     = "./cluster"
-  azs        = "${slice(data.aws_availability_zones.available.names, 0, 2)}"
+  azs        = "${slice(data.aws_availability_zones.available.names, 0, 1)}"
   vpc_id     = "${module.vpc.vpc_id}"
   vpc_cidr   = "${var.vpc_cidr}"
   key_name   = "tmuntaner"
