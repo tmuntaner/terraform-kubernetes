@@ -99,6 +99,13 @@ resource "aws_security_group" "main" {
   }
 
   ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.200.0.0/16"]
+  }
+
+  ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -416,6 +423,7 @@ resource "aws_instance" "worker" {
   vpc_security_group_ids = ["${aws_security_group.main.id}"]
   private_ip             = "10.240.8.2${count.index}"
   key_name               = "${var.key_name}"
+  source_dest_check      = false
 
   connection {
     user = "ec2-user"
