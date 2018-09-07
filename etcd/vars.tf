@@ -1,7 +1,8 @@
+variable "cluster_name" {}
+
 variable "vpc_id" {}
 
 variable "vpc_cidr" {}
-variable "gateway_id" {}
 
 variable "subnet_ids" {
   type = "list"
@@ -9,6 +10,8 @@ variable "subnet_ids" {
 
 variable "key_name" {}
 
-variable "azs" {
+variable "depends_on" {
+  default = []
+
   type = "list"
 }
