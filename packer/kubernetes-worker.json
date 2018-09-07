@@ -2,6 +2,7 @@
     "variables": {
         "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
         "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+        "owner_id": "{{env `AWS_AMI_OWNER_ID`}}",
         "region": "eu-central-1"
     },
     "builders": [
@@ -20,7 +21,7 @@
                     "root-device-type": "ebs"
                 },
                 "owners": [
-                    "374278911799"
+                    "{{user `owner_id`}}"
                 ],
                 "most_recent": true
             },
