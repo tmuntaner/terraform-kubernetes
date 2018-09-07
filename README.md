@@ -4,13 +4,9 @@
 
 * Install Cloudflare's PKI and TLS Toolkit [CFSSL](https://github.com/cloudflare/cfssl).
 
-**TODO:**
+**Run after cluster is created:**
 
-* add AWS cloud provider
-* nginx ingress
-* generate worker node configuration on demand
-
-```
+```bash
 cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -47,5 +43,5 @@ subjects:
     kind: User
     name: kubernetes
 EOF
-kubectl create -f https://storage.googleapis.com/kubernetes-the-hard-way/kube-dns.yaml
+kubectl create --kubeconfig admin.kubeconfig -f https://storage.googleapis.com/kubernetes-the-hard-way/kube-dns.yaml
 ```
