@@ -16,6 +16,10 @@ provider "null" {
   version = "~> 1.0"
 }
 
+provider "random" {
+  version = "~> 2.0"
+}
+
 data "aws_region" "current" {
   name = "${local.region}"
 }

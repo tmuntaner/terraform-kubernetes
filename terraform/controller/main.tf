@@ -48,7 +48,7 @@ data "aws_ami" "controller" {
 }
 
 resource "aws_instance" "controller" {
-  count                  = 3
+  count                  = 2
   ami                    = "${data.aws_ami.controller.id}"
   instance_type          = "t2.micro"
   subnet_id              = "${var.subnet_ids[0]}"
@@ -231,13 +231,13 @@ EOF
 }
 
 resource "aws_elb_attachment" "api_internal" {
-  count    = 3
+  count    = 2
   elb      = "${var.internal_elb_id}"
   instance = "${element(aws_instance.controller.*.id, count.index)}"
 }
 
 resource "aws_elb_attachment" "api_public" {
-  count    = 3
+  count    = 2
   elb      = "${var.public_elb_id}"
   instance = "${element(aws_instance.controller.*.id, count.index)}"
 }
