@@ -5,6 +5,7 @@ rm -f tmp/*.pem tmp/*.csr tmp/*.json tmp/*.kubeconfig admin.kubeconfig
 cd tmp
 ../scripts/certs.sh
 ../scripts/server_kubectl.sh
+../scripts/configs.sh
 cd ..
 ./scripts/user_kubectl.sh
 CMD

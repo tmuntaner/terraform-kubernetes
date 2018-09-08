@@ -1,3 +1,6 @@
+SECRET=`head -c 32 /dev/urandom | base64`
+
+cat > encryption-config.yaml <<EOF
 kind: EncryptionConfig
 apiVersion: v1
 resources:
@@ -7,5 +10,6 @@ resources:
       - aescbc:
           keys:
             - name: key1
-              secret: ok0Joa5afLUtLkQPhY+IlfjJLr5cwiKojyRt14FW1tw=
+              secret: ${SECRET}
       - identity: {}
+EOF

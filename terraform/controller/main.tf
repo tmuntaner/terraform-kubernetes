@@ -105,10 +105,8 @@ resource "aws_instance" "controller" {
     destination = "kube-scheduler.kubeconfig"
   }
 
-  # todo: add encryption key to vault
-  # head -c 32 /dev/urandom | base64
   provisioner "file" {
-    source      = "encryption-config.yaml"
+    source      = "tmp/encryption-config.yaml"
     destination = "encryption-config.yaml"
   }
 
