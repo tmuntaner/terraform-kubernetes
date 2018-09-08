@@ -42,18 +42,18 @@ module "elb" {
 }
 
 module "config" {
-  source = "./config"
+  source            = "./config"
   internal_dns_name = "${module.elb.internal_dns_name}"
   public_dns_name   = "${module.elb.public_dns_name}"
 }
 
 module "etcd" {
-  source     = "./etcd"
-  vpc_id     = "${module.vpc.vpc_id}"
-  vpc_cidr   = "${var.vpc_cidr}"
-  key_name   = "tmuntaner"
-  subnet_ids = "${module.vpc.public_subnet_ids}"
-  depends_on = ["null_resource.generate_config"]
+  source       = "./etcd"
+  vpc_id       = "${module.vpc.vpc_id}"
+  vpc_cidr     = "${var.vpc_cidr}"
+  key_name     = "tmuntaner"
+  subnet_ids   = "${module.vpc.public_subnet_ids}"
+  depends_on   = ["null_resource.generate_config"]
   cluster_name = "${module.config.cluster_name}"
 }
 
@@ -65,16 +65,16 @@ module "controller" {
   subnet_ids      = "${module.vpc.public_subnet_ids}"
   internal_elb_id = "${module.elb.internal_elb_id}"
   public_elb_id   = "${module.elb.public_elb_id}"
-  cluster_name = "${module.config.cluster_name}"
+  cluster_name    = "${module.config.cluster_name}"
 }
 
 module "worker" {
-  source     = "./worker"
-  azs        = "${slice(data.aws_availability_zones.available.names, 0, 1)}"
-  vpc_id     = "${module.vpc.vpc_id}"
-  vpc_cidr   = "${var.vpc_cidr}"
-  key_name   = "tmuntaner"
-  subnet_ids = "${module.vpc.public_subnet_ids}"
-  gateway_id = "${module.vpc.gateway_id}"
+  source       = "./worker"
+  azs          = "${slice(data.aws_availability_zones.available.names, 0, 1)}"
+  vpc_id       = "${module.vpc.vpc_id}"
+  vpc_cidr     = "${var.vpc_cidr}"
+  key_name     = "tmuntaner"
+  subnet_ids   = "${module.vpc.public_subnet_ids}"
+  gateway_id   = "${module.vpc.gateway_id}"
   cluster_name = "${module.config.cluster_name}"
 }
