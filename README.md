@@ -3,6 +3,10 @@
 **Prerequisites:**
 
 * Install Cloudflare's PKI and TLS Toolkit [CFSSL](https://github.com/cloudflare/cfssl).
+```bash
+go get -u github.com/cloudflare/cfssl/cmd/cfssl
+go get -u github.com/cloudflare/cfssl/cmd/cfssljson
+```
 
 **Run after cluster is created:**
 
