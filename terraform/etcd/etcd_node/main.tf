@@ -3,7 +3,7 @@ resource "aws_instance" "etcd" {
   instance_type          = "t2.micro"
   subnet_id              = "${var.subnet_id}"
   vpc_security_group_ids = ["${var.security_group_id}"]
-  private_ip             = "10.240.8.1${var.node_id}"
+  private_ip             = "${var.node_ip}"
   key_name               = "${var.key_name}"
 
   connection {
@@ -36,7 +36,7 @@ Documentation=https://github.com/coreos
 
 [Service]
 ExecStart=/usr/local/bin/etcd \\
-  --name ip-10-240-8-1${var.node_id} \\
+  --name ip-${replace(var.node_ip, ".", "-")} \\
   --cert-file=/etc/etcd/kubernetes.pem \\
   --key-file=/etc/etcd/kubernetes-key.pem \\
   --peer-cert-file=/etc/etcd/kubernetes.pem \\
@@ -45,12 +45,12 @@ ExecStart=/usr/local/bin/etcd \\
   --peer-trusted-ca-file=/etc/etcd/ca.pem \\
   --peer-client-cert-auth \\
   --client-cert-auth \\
-  --initial-advertise-peer-urls https://10.240.8.1${var.node_id}:2380 \\
-  --listen-peer-urls https://10.240.8.1${var.node_id}:2380 \\
-  --listen-client-urls https://10.240.8.1${var.node_id}:2379,https://127.0.0.1:2379 \\
-  --advertise-client-urls https://10.240.8.1${var.node_id}:2379 \\
+  --initial-advertise-peer-urls https://${var.node_ip}:2380 \\
+  --listen-peer-urls https://${var.node_ip}:2380 \\
+  --listen-client-urls https://${var.node_ip}:2379,https://127.0.0.1:2379 \\
+  --advertise-client-urls https://${var.node_ip}:2379 \\
   --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster ip-10-240-8-10=https://10.240.8.10:2380,ip-10-240-8-11=https://10.240.8.11:2380,ip-10-240-8-12=https://10.240.8.12:2380 \\
+  --initial-cluster ip-10-240-8-10=https://10.240.8.10:2380,ip-10-240-16-10=https://10.240.16.10:2380,ip-10-240-24-10=https://10.240.24.10:2380 \\
   --initial-cluster-state new \\
   --data-dir=/var/lib/etcd
 Restart=on-failure

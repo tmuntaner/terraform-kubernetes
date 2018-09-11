@@ -31,7 +31,7 @@ data "aws_availability_zones" "available" {
 module "vpc" {
   source     = "./vpc"
   cidr_block = "${var.vpc_cidr}"
-  azs        = "${slice(data.aws_availability_zones.available.names, 0, 1)}"
+  azs        = "${slice(data.aws_availability_zones.available.names, 0, 3)}"
   aws_region = "${data.aws_region.current.name}"
 }
 

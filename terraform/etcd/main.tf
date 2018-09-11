@@ -42,7 +42,8 @@ data "aws_ami" "etcd" {
 
 module "etcd_node_1" {
   source            = "./etcd_node"
-  node_id           = 1
+  node_id           = 0
+  node_ip           = "10.240.8.10"
   key_name          = "tmuntaner"
   subnet_id         = "${var.subnet_ids[0]}"
   cluster_name      = "${var.cluster_name}"
@@ -52,9 +53,10 @@ module "etcd_node_1" {
 
 module "etcd_node_2" {
   source            = "./etcd_node"
-  node_id           = 2
+  node_id           = 1
+  node_ip           = "10.240.16.10"
   key_name          = "tmuntaner"
-  subnet_id         = "${var.subnet_ids[0]}"
+  subnet_id         = "${var.subnet_ids[1]}"
   cluster_name      = "${var.cluster_name}"
   ami_id            = "${data.aws_ami.etcd.id}"
   security_group_id = "${aws_security_group.main.id}"
@@ -62,9 +64,10 @@ module "etcd_node_2" {
 
 module "etcd_node_3" {
   source            = "./etcd_node"
-  node_id           = 3
+  node_id           = 2
+  node_ip           = "10.240.24.10"
   key_name          = "tmuntaner"
-  subnet_id         = "${var.subnet_ids[0]}"
+  subnet_id         = "${var.subnet_ids[2]}"
   cluster_name      = "${var.cluster_name}"
   ami_id            = "${data.aws_ami.etcd.id}"
   security_group_id = "${aws_security_group.main.id}"

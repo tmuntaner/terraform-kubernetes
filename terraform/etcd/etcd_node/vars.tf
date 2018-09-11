@@ -9,3 +9,5 @@ variable "key_name" {}
 variable "security_group_id" {}
 
 variable "node_id" {}
+
+variable "node_ip" {}
