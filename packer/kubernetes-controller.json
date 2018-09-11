@@ -3,7 +3,7 @@
         "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
         "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
         "owner_id": "{{env `AWS_AMI_OWNER_ID`}}",
-        "region": "eu-central-1"
+        "region": "eu-west-1"
     },
     "builders": [
         {
@@ -12,7 +12,7 @@
             "force_delete_snapshot": true,
             "force_deregister": true,
             "instance_type": "t2.micro",
-            "region": "eu-central-1",
+            "region": "eu-west-1",
             "secret_key": "{{user `aws_secret_key`}}",
             "source_ami_filter": {
                 "filters": {
