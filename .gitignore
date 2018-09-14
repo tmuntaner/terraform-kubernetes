@@ -3,3 +3,4 @@ terraform.tfstate*
 .history
 .vscode
 admin.kubeconfig
+clouds.yaml
