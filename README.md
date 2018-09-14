@@ -1,4 +1,4 @@
-# Kubernetes with Terraform and AWS
+# Kubernetes with Terraform Playground
 
 **Prerequisites:**
 
