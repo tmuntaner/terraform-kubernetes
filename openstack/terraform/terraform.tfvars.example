@@ -1,0 +1,9 @@
+openstack_tenant = "project-name"
+openstack_username = "username"
+openstack_password = "password"
+openstack_auth_url = ""
+keypair = "keypair"
+master_instance_count = 1
+worker_instance_count = 2
+subnet_id = "subnet id"
+external_network_id = ""

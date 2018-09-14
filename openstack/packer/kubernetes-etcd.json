@@ -1,0 +1,32 @@
+{
+  "builders": [
+    {
+      "type": "openstack",
+      "ssh_username": "root",
+      "image_name": "kubernetes-etcd",
+      "source_image_name": "kubernetes-base",
+      "flavor": "m1.small",
+      "ssh_agent_auth": true,
+      "ssh_keypair_name": "tmuntaner",
+      "floating_ip_pool": "floating",
+      "networks": [
+        "897dd8d9-0ba3-4fb1-a94b-8e6c8f4274b5"
+      ],
+      "metadata": {
+        "creator": "packer"
+      }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "inline": [
+        "wget -q https://github.com/coreos/etcd/releases/download/v3.3.5/etcd-v3.3.5-linux-amd64.tar.gz",
+        "tar -xvf etcd-v3.3.5-linux-amd64.tar.gz",
+        "mv etcd-v3.3.5-linux-amd64/etcd* /usr/local/bin/",
+        "mkdir -p /etc/etcd /var/lib/etcd"
+      ]
+    }
+  ]
+}
