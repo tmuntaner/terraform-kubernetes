@@ -1,44 +1,44 @@
 {
-    "variables": {
-        "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
-        "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
-        "owner_id": "{{env `AWS_AMI_OWNER_ID`}}",
-        "region": "eu-west-1"
-    },
-    "builders": [
-        {
-            "access_key": "{{user `aws_access_key`}}",
-            "ami_name": "leap-42-3-etcd",
-            "force_delete_snapshot": true,
-            "force_deregister": true,
-            "instance_type": "t2.micro",
-            "region": "eu-west-1",
-            "secret_key": "{{user `aws_secret_key`}}",
-            "source_ami_filter": {
-                "filters": {
-                    "virtualization-type": "hvm",
-                    "name": "leap-42-3-kubernetes-base",
-                    "root-device-type": "ebs"
-                },
-                "owners": [
-                    "{{user `owner_id`}}"
-                ],
-                "most_recent": true
-            },
-            "ssh_username": "ec2-user",
-            "type": "amazon-ebs"
-        }
-    ],
-    "provisioners": [
-        {
-            "type": "shell",
-            "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
-            "inline": [
-                "wget -q https://github.com/coreos/etcd/releases/download/v3.3.5/etcd-v3.3.5-linux-amd64.tar.gz",
-                "tar -xvf etcd-v3.3.5-linux-amd64.tar.gz",
-                "mv etcd-v3.3.5-linux-amd64/etcd* /usr/local/bin/",
-                "mkdir -p /etc/etcd /var/lib/etcd"
-            ]
-        }
-    ]
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "owner_id": "{{env `AWS_AMI_OWNER_ID`}}",
+    "region": "eu-west-1"
+  },
+  "builders": [
+    {
+      "access_key": "{{user `aws_access_key`}}",
+      "ami_name": "leap-42-3-etcd",
+      "force_delete_snapshot": true,
+      "force_deregister": true,
+      "instance_type": "t2.micro",
+      "region": "eu-west-1",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "leap-42-3-kubernetes-base",
+          "root-device-type": "ebs"
+        },
+        "owners": [
+          "{{user `owner_id`}}"
+        ],
+        "most_recent": true
+      },
+      "ssh_username": "ec2-user",
+      "type": "amazon-ebs"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "inline": [
+        "wget -q https://github.com/coreos/etcd/releases/download/v3.3.5/etcd-v3.3.5-linux-amd64.tar.gz",
+        "tar -xvf etcd-v3.3.5-linux-amd64.tar.gz",
+        "mv etcd-v3.3.5-linux-amd64/etcd* /usr/local/bin/",
+        "mkdir -p /etc/etcd /var/lib/etcd"
+      ]
+    }
+  ]
 }

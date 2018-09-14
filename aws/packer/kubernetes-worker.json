@@ -1,57 +1,57 @@
 {
-    "variables": {
-        "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
-        "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
-        "owner_id": "{{env `AWS_AMI_OWNER_ID`}}",
-        "region": "eu-west-1"
-    },
-    "builders": [
-        {
-            "access_key": "{{user `aws_access_key`}}",
-            "ami_name": "leap-42-3-kubernetes-worker",
-            "force_delete_snapshot": true,
-            "force_deregister": true,
-            "instance_type": "t2.micro",
-            "region": "eu-west-1",
-            "secret_key": "{{user `aws_secret_key`}}",
-            "source_ami_filter": {
-                "filters": {
-                    "virtualization-type": "hvm",
-                    "name": "leap-42-3-kubernetes-base",
-                    "root-device-type": "ebs"
-                },
-                "owners": [
-                    "{{user `owner_id`}}"
-                ],
-                "most_recent": true
-            },
-            "ssh_username": "ec2-user",
-            "type": "amazon-ebs"
-        }
-    ],
-    "provisioners": [
-        {
-            "type": "shell",
-            "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
-            "inline": [
-                "echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/50-router.conf",
-                "zypper --no-gpg-checks --non-interactive in socat conntrack-tools ipset",
-                "wget -q https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.11.1/crictl-v1.11.1-linux-amd64.tar.gz",
-                "wget -q https://storage.googleapis.com/kubernetes-the-hard-way/runsc",
-                "wget -q https://github.com/opencontainers/runc/releases/download/v1.0.0-rc5/runc.amd64",
-                "wget -q https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz",
-                "wget -q https://github.com/containerd/containerd/releases/download/v1.1.3/containerd-1.1.3.linux-amd64.tar.gz",
-                "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.11.0/bin/linux/amd64/kubectl",
-                "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.11.0/bin/linux/amd64/kube-proxy",
-                "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.11.0/bin/linux/amd64/kubelet",
-                "mkdir -p /etc/cni/net.d /opt/cni/bin /var/lib/kubelet /var/lib/kube-proxy /var/lib/kubernetes /var/run/kubernetes",
-                "chmod +x kubectl kube-proxy kubelet runc.amd64 runsc",
-                "mv runc.amd64 runc",
-                "mv kubectl kube-proxy kubelet runc runsc /usr/local/bin/",
-                "tar -xvf crictl-v1.11.1-linux-amd64.tar.gz -C /usr/local/bin/",
-                "tar -xvf cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/",
-                "tar -xvf containerd-1.1.3.linux-amd64.tar.gz -C /"
-            ]
-        }
-    ]
+  "variables": {
+    "aws_access_key": "{{env `AWS_ACCESS_KEY_ID`}}",
+    "aws_secret_key": "{{env `AWS_SECRET_ACCESS_KEY`}}",
+    "owner_id": "{{env `AWS_AMI_OWNER_ID`}}",
+    "region": "eu-west-1"
+  },
+  "builders": [
+    {
+      "access_key": "{{user `aws_access_key`}}",
+      "ami_name": "leap-42-3-kubernetes-worker",
+      "force_delete_snapshot": true,
+      "force_deregister": true,
+      "instance_type": "t2.micro",
+      "region": "eu-west-1",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "leap-42-3-kubernetes-base",
+          "root-device-type": "ebs"
+        },
+        "owners": [
+          "{{user `owner_id`}}"
+        ],
+        "most_recent": true
+      },
+      "ssh_username": "ec2-user",
+      "type": "amazon-ebs"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
+      "inline": [
+        "echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/50-router.conf",
+        "zypper --no-gpg-checks --non-interactive in socat conntrack-tools ipset",
+        "wget -q https://github.com/kubernetes-incubator/cri-tools/releases/download/v1.11.1/crictl-v1.11.1-linux-amd64.tar.gz",
+        "wget -q https://storage.googleapis.com/kubernetes-the-hard-way/runsc",
+        "wget -q https://github.com/opencontainers/runc/releases/download/v1.0.0-rc5/runc.amd64",
+        "wget -q https://github.com/containernetworking/plugins/releases/download/v0.6.0/cni-plugins-amd64-v0.6.0.tgz",
+        "wget -q https://github.com/containerd/containerd/releases/download/v1.1.3/containerd-1.1.3.linux-amd64.tar.gz",
+        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.11.0/bin/linux/amd64/kubectl",
+        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.11.0/bin/linux/amd64/kube-proxy",
+        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.11.0/bin/linux/amd64/kubelet",
+        "mkdir -p /etc/cni/net.d /opt/cni/bin /var/lib/kubelet /var/lib/kube-proxy /var/lib/kubernetes /var/run/kubernetes",
+        "chmod +x kubectl kube-proxy kubelet runc.amd64 runsc",
+        "mv runc.amd64 runc",
+        "mv kubectl kube-proxy kubelet runc runsc /usr/local/bin/",
+        "tar -xvf crictl-v1.11.1-linux-amd64.tar.gz -C /usr/local/bin/",
+        "tar -xvf cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin/",
+        "tar -xvf containerd-1.1.3.linux-amd64.tar.gz -C /"
+      ]
+    }
+  ]
 }
