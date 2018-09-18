@@ -74,6 +74,10 @@ resource "null_resource" "provision" {
     user = "opensuse"
   }
 
+  triggers {
+    host_id = "${element(openstack_compute_instance_v2.etcd.*.id, count.index)}"
+  }
+
   provisioner "file" {
     source      = "tmp/ca.pem"
     destination = "ca.pem"
