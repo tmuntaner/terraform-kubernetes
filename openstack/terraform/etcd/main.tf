@@ -101,7 +101,7 @@ resource "null_resource" "provision" {
 
   provisioner "local-exec" {
     command = <<CMD
-ansible-playbook -i $ETCD_IP, -u opensuse -s playbook.yml -e etcd_node_name=$ETCD_NODE_NAME -e etcd_initial_cluster="$ETCD_INITIAL_CLUSTER"
+ansible-playbook -i $ETCD_IP, -u opensuse -s playbook-etcd.yml -e etcd_node_name=$ETCD_NODE_NAME -e etcd_initial_cluster="$ETCD_INITIAL_CLUSTER"
 CMD
 
     working_dir = "../../ansible"
