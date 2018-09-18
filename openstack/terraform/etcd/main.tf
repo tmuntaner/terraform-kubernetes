@@ -92,42 +92,21 @@ resource "null_resource" "provision" {
   provisioner "remote-exec" {
     inline = [
       "sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/etcd/",
-      <<CAT
-cat <<EOF | sudo tee /etc/systemd/system/etcd.service
-[Unit]
-Description=etcd
-Documentation=https://github.com/coreos
-
-[Service]
-ExecStart=/usr/local/bin/etcd \\
-  --name ip-${replace(element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index), ".", "-")} \\
-  --cert-file=/etc/etcd/kubernetes.pem \\
-  --key-file=/etc/etcd/kubernetes-key.pem \\
-  --peer-cert-file=/etc/etcd/kubernetes.pem \\
-  --peer-key-file=/etc/etcd/kubernetes-key.pem \\
-  --trusted-ca-file=/etc/etcd/ca.pem \\
-  --peer-trusted-ca-file=/etc/etcd/ca.pem \\
-  --peer-client-cert-auth \\
-  --client-cert-auth \\
-  --initial-advertise-peer-urls https://${element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index)}:2380 \\
-  --listen-peer-urls https://${element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index)}:2380 \\
-  --listen-client-urls https://${element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index)}:2379,https://127.0.0.1:2379 \\
-  --advertise-client-urls https://${element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index)}:2379 \\
-  --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster ip-10-240-8-10=https://10.240.8.10:2380,ip-10-240-8-11=https://10.240.8.11:2380,ip-10-240-8-12=https://10.240.8.12:2380 \\
-  --initial-cluster-state new \\
-  --data-dir=/var/lib/etcd
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-      CAT
-      ,
-      "sudo systemctl daemon-reload",
-      "sudo systemctl enable etcd.service",
-      "sudo systemctl start etcd.service",
     ]
+  }
+
+  provisioner "local-exec" {
+    command = <<CMD
+ansible-playbook -i $ETCD_IP, -u opensuse -s playbook.yml -e etcd_node_name=$ETCD_NODE_NAME -e etcd_initial_cluster="$ETCD_INITIAL_CLUSTER"
+CMD
+
+    working_dir = "../../ansible"
+
+    environment {
+      ANSIBLE_HOST_KEY_CHECKING = "False"
+      ETCD_IP                   = "${element(openstack_networking_floatingip_v2.etcd.*.address, count.index)}"
+      ETCD_INITIAL_CLUSTER      = "ip-10-240-8-10=https://10.240.8.10:2380,ip-10-240-8-11=https://10.240.8.11:2380,ip-10-240-8-12=https://10.240.8.12:2380"
+      ETCD_NODE_NAME            = "ip-${replace(element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index), ".", "-")}"
+    }
   }
 }
