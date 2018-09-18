@@ -66,8 +66,18 @@ resource "openstack_compute_floatingip_associate_v2" "etcd" {
   wait_until_associated = true
 }
 
+resource "null_resource" "certs" {
+  provisioner "local-exec" {
+    command = <<CMD
+cd ../../
+./scripts/etcd.sh
+CMD
+  }
+}
+
 resource "null_resource" "provision" {
-  count = 3
+  count      = 3
+  depends_on = ["null_resource.certs"]
 
   connection {
     host = "${element(openstack_compute_floatingip_associate_v2.etcd.*.floating_ip, count.index)}"
@@ -79,17 +89,19 @@ resource "null_resource" "provision" {
   }
 
   provisioner "file" {
-    source      = "tmp/ca.pem"
+    source      = "../../keys/ca.pem"
     destination = "ca.pem"
   }
 
+  // TODO: change to etcd-key.pem (let's not break aws yet)
   provisioner "file" {
-    source      = "tmp/kubernetes-key.pem"
+    source      = "../../keys/etcd-key.pem"
     destination = "kubernetes-key.pem"
   }
 
+  // TODO: change to etcd.pem (let's not break aws yet)
   provisioner "file" {
-    source      = "tmp/kubernetes.pem"
+    source      = "../../keys/etcd.pem"
     destination = "kubernetes.pem"
   }
 

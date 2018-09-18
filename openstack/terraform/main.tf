@@ -30,12 +30,6 @@ module "network" {
   external_network_id = "${var.external_network_id}"
 }
 
-module "config" {
-  source            = "./config"
-  internal_dns_name = ""
-  public_dns_name   = ""
-}
-
 module "etcd" {
   source       = "./etcd"
   cluster_name = "${random_pet.cluster_name.id}"

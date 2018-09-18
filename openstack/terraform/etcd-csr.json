@@ -1,0 +1,16 @@
+{
+  "CN": "kube-etcd",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "DE",
+      "L": "Nuremberg",
+      "O": "Kubernetes",
+      "OU": "kube-etcd",
+      "ST": "Bayern"
+    }
+  ]
+}
