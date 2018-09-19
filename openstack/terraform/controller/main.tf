@@ -1,3 +1,8 @@
+locals {
+  fixed_ips  = "${formatlist("%v", openstack_compute_instance_v2.main.*.network.0.fixed_ip_v4)}"
+  etcd_nodes = "${formatlist("%v", data.template_file.etcd_node.*.rendered)}"
+}
+
 resource "openstack_compute_secgroup_v2" "main" {
   name        = "${var.cluster_name}-kubernetes-controller"
   description = "kubernetes etcd"
@@ -25,7 +30,7 @@ resource "openstack_compute_secgroup_v2" "main" {
 }
 
 resource "openstack_compute_instance_v2" "main" {
-  count           = 3
+  count           = "${var.instance_count}"
   name            = "${var.cluster_name}-kubernetes-controller-${count.index}"
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
@@ -47,16 +52,25 @@ resource "openstack_compute_instance_v2" "main" {
 }
 
 resource "openstack_networking_floatingip_v2" "main" {
-  count = 3
+  count = "${var.instance_count}"
   pool  = "floating"
 }
 
 resource "openstack_compute_floatingip_associate_v2" "main" {
-  count                 = 3
+  count                 = "${var.instance_count}"
   floating_ip           = "${element(openstack_networking_floatingip_v2.main.*.address, count.index)}"
   instance_id           = "${element(openstack_compute_instance_v2.main.*.id, count.index)}"
   fixed_ip              = "${element(openstack_compute_instance_v2.main.*.network.0.fixed_ip_v4, count.index)}"
   wait_until_associated = true
+}
+
+data "template_file" "etcd_node" {
+  count    = "${var.instance_count}"
+  template = "https://$${etcd_ip}:2379"
+
+  vars {
+    etcd_ip = "${element(var.etcd_instance_ip_addresses, count.index)}"
+  }
 }
 
 resource "null_resource" "certs" {
@@ -65,11 +79,15 @@ resource "null_resource" "certs" {
 cd ../../
 ./scripts/controller.sh
 CMD
+
+    environment {
+      CONTROLLER_HOSTS = "${join(",", local.fixed_ips)}"
+    }
   }
 }
 
 resource "null_resource" "provision" {
-  count      = 3
+  count      = "${var.instance_count}"
   depends_on = ["null_resource.certs"]
 
   connection {
@@ -142,13 +160,14 @@ resource "null_resource" "provision" {
 
   provisioner "local-exec" {
     command = <<CMD
-ansible-playbook -i $NODE_IP, -u opensuse -s playbook-controller.yml
+ansible-playbook -i $NODE_IP, -u opensuse -s playbook-controller.yml -e etcd_cluster="$ETCD_CLUSTER"
 CMD
 
     working_dir = "../../ansible"
 
     environment {
       ANSIBLE_HOST_KEY_CHECKING = "False"
+      ETCD_CLUSTER              = "${join(",", local.etcd_nodes)}"
       NODE_IP                   = "${element(openstack_networking_floatingip_v2.main.*.address, count.index)}"
     }
   }

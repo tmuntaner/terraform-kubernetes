@@ -1,3 +1,9 @@
+locals {
+  fixed_ips       = "${formatlist("%v", openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4)}"
+  etcd_nodes      = "${formatlist("%v", data.template_file.etcd_node.*.rendered)}"
+  etcd_node_names = "${formatlist("%v", data.template_file.etcd_node_name.*.rendered)}"
+}
+
 resource "openstack_compute_secgroup_v2" "etcd" {
   name        = "${var.cluster_name}-kubernetes-etcd"
   description = "kubernetes etcd"
@@ -32,7 +38,7 @@ resource "openstack_compute_secgroup_v2" "etcd" {
 }
 
 resource "openstack_compute_instance_v2" "etcd" {
-  count           = 3
+  count           = "${var.instance_count}"
   name            = "${var.cluster_name}-etcd-${count.index}"
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
@@ -54,16 +60,35 @@ resource "openstack_compute_instance_v2" "etcd" {
 }
 
 resource "openstack_networking_floatingip_v2" "etcd" {
-  count = 3
+  count = "${var.instance_count}"
   pool  = "floating"
 }
 
 resource "openstack_compute_floatingip_associate_v2" "etcd" {
-  count                 = 3
+  count                 = "${var.instance_count}"
   floating_ip           = "${element(openstack_networking_floatingip_v2.etcd.*.address, count.index)}"
   instance_id           = "${element(openstack_compute_instance_v2.etcd.*.id, count.index)}"
   fixed_ip              = "${element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index)}"
   wait_until_associated = true
+}
+
+data "template_file" "etcd_node_name" {
+  count    = "${var.instance_count}"
+  template = "ip-$${clean_ip}"
+
+  vars {
+    clean_ip = "${replace(element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index), ".", "-")}"
+  }
+}
+
+data "template_file" "etcd_node" {
+  count    = "${var.instance_count}"
+  template = "$${etcd_node_name}=https://$${etcd_ip}:2380"
+
+  vars {
+    etcd_node_name = "${element(local.etcd_node_names, count.index)}"
+    etcd_ip        = "${element(local.fixed_ips, count.index)}"
+  }
 }
 
 resource "null_resource" "certs" {
@@ -72,11 +97,15 @@ resource "null_resource" "certs" {
 cd ../../
 ./scripts/etcd.sh
 CMD
+
+    environment {
+      ETCD_HOSTS = "${join(",", local.fixed_ips)}"
+    }
   }
 }
 
 resource "null_resource" "provision" {
-  count      = 3
+  count      = "${var.instance_count}"
   depends_on = ["null_resource.certs"]
 
   connection {
@@ -121,8 +150,8 @@ CMD
     environment {
       ANSIBLE_HOST_KEY_CHECKING = "False"
       NODE_IP                   = "${element(openstack_networking_floatingip_v2.etcd.*.address, count.index)}"
-      ETCD_INITIAL_CLUSTER      = "ip-10-240-8-10=https://10.240.8.10:2380,ip-10-240-8-11=https://10.240.8.11:2380,ip-10-240-8-12=https://10.240.8.12:2380"
-      ETCD_NODE_NAME            = "ip-${replace(element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index), ".", "-")}"
+      ETCD_INITIAL_CLUSTER      = "${join(",", local.etcd_nodes)}"
+      ETCD_NODE_NAME            = "${element(local.etcd_node_names, count.index)}"
     }
   }
 

@@ -21,6 +21,10 @@ provider "null" {
   version = "~> 1.0"
 }
 
+provider "template" {
+  version = "~> 1.0"
+}
+
 resource "random_pet" "cluster_name" {}
 
 module "network" {
@@ -38,8 +42,9 @@ module "etcd" {
 }
 
 module "controller" {
-  source       = "./controller"
-  cluster_name = "${random_pet.cluster_name.id}"
-  keypair      = "${var.keypair}"
-  network_name = "${module.network.network_name}"
+  source                     = "./controller"
+  cluster_name               = "${random_pet.cluster_name.id}"
+  keypair                    = "${var.keypair}"
+  network_name               = "${module.network.network_name}"
+  etcd_instance_ip_addresses = "${module.etcd.etcd_instance_ip_addresses}"
 }
