@@ -8,4 +8,3 @@
   service:
     name: etcd
     enabled: yes
-    state: started

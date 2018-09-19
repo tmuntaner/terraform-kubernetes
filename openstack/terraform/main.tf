@@ -36,3 +36,10 @@ module "etcd" {
   keypair      = "${var.keypair}"
   network_name = "${module.network.network_name}"
 }
+
+module "controller" {
+  source       = "./controller"
+  cluster_name = "${random_pet.cluster_name.id}"
+  keypair      = "${var.keypair}"
+  network_name = "${module.network.network_name}"
+}

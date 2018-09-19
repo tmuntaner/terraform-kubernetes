@@ -18,13 +18,13 @@ cat > etcd-csr.json <<EOF
 EOF
 
 cfssl gencert \
-  -ca=keys/ca.pem \
-  -ca-key=keys/ca-key.pem \
+  -ca=data/keys/ca.pem \
+  -ca-key=data/keys/ca-key.pem \
   -config=ca-config.json \
-  -hostname=10.240.8.10,10.240.16.10,10.240.24.10,127.0.0.1 \
+  -hostname=10.240.8.10,10.240.8.11,10.240.8.12,127.0.0.1 \
   -profile=kubernetes \
   etcd-csr.json | cfssljson -bare etcd
 
 rm etcd-csr.json etcd.csr
-mv etcd.pem keys
-mv etcd-key.pem keys
+mv etcd.pem data/keys
+mv etcd-key.pem data/keys

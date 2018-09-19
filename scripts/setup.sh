@@ -36,5 +36,5 @@ EOF
 cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 
 rm ca-csr.json ca.csr
-mv ca.pem keys
-mv ca-key.pem keys
+mv ca.pem data/keys
+mv ca-key.pem data/keys

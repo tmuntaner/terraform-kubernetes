@@ -33,7 +33,7 @@ resource "openstack_compute_secgroup_v2" "etcd" {
 
 resource "openstack_compute_instance_v2" "etcd" {
   count           = 3
-  name            = "${var.cluster_name}-etcd"
+  name            = "${var.cluster_name}-etcd-${count.index}"
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
   security_groups = ["${openstack_compute_secgroup_v2.etcd.name}"]
@@ -89,19 +89,19 @@ resource "null_resource" "provision" {
   }
 
   provisioner "file" {
-    source      = "../../keys/ca.pem"
+    source      = "../../data/keys/ca.pem"
     destination = "ca.pem"
   }
 
   // TODO: change to etcd-key.pem (let's not break aws yet)
   provisioner "file" {
-    source      = "../../keys/etcd-key.pem"
+    source      = "../../data/keys/etcd-key.pem"
     destination = "kubernetes-key.pem"
   }
 
   // TODO: change to etcd.pem (let's not break aws yet)
   provisioner "file" {
-    source      = "../../keys/etcd.pem"
+    source      = "../../data/keys/etcd.pem"
     destination = "kubernetes.pem"
   }
 
@@ -113,16 +113,22 @@ resource "null_resource" "provision" {
 
   provisioner "local-exec" {
     command = <<CMD
-ansible-playbook -i $ETCD_IP, -u opensuse -s playbook-etcd.yml -e etcd_node_name=$ETCD_NODE_NAME -e etcd_initial_cluster="$ETCD_INITIAL_CLUSTER"
+ansible-playbook -i $NODE_IP, -u opensuse -s playbook-etcd.yml -e etcd_node_name=$ETCD_NODE_NAME -e etcd_initial_cluster="$ETCD_INITIAL_CLUSTER"
 CMD
 
     working_dir = "../../ansible"
 
     environment {
       ANSIBLE_HOST_KEY_CHECKING = "False"
-      ETCD_IP                   = "${element(openstack_networking_floatingip_v2.etcd.*.address, count.index)}"
+      NODE_IP                   = "${element(openstack_networking_floatingip_v2.etcd.*.address, count.index)}"
       ETCD_INITIAL_CLUSTER      = "ip-10-240-8-10=https://10.240.8.10:2380,ip-10-240-8-11=https://10.240.8.11:2380,ip-10-240-8-12=https://10.240.8.12:2380"
       ETCD_NODE_NAME            = "ip-${replace(element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index), ".", "-")}"
     }
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo systemctl restart etcd",
+    ]
   }
 }
