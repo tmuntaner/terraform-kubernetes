@@ -49,3 +49,11 @@ module "controller" {
   etcd_instance_ip_addresses = "${module.etcd.etcd_instance_ip_addresses}"
   subnet_id                  = "${module.network.subnet_id}"
 }
+
+module "worker" {
+  source                      = "./worker"
+  cluster_name                = "${random_pet.cluster_name.id}"
+  keypair                     = "${var.keypair}"
+  network_name                = "${module.network.network_name}"
+  kubernetes_internal_address = "${module.controller.kubernetes_api_public_ip}"
+}
