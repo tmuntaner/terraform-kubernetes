@@ -81,7 +81,9 @@ cd ../../
 CMD
 
     environment {
-      CONTROLLER_HOSTS = "${join(",", local.fixed_ips)}"
+      CONTROLLER_HOSTS            = "${join(",", local.fixed_ips)}"
+      KUBERNETES_PUBLIC_ADDRESS   = "${openstack_networking_floatingip_v2.kubernetes-api.address}"
+      KUBERNETES_INTERNAL_ADDRESS = "${openstack_lb_loadbalancer_v2.kubernetes_lb.vip_address}"
     }
   }
 }
