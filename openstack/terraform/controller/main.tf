@@ -73,16 +73,22 @@ data "template_file" "etcd_node" {
   }
 }
 
-resource "null_resource" "certs" {
+resource "null_resource" "config" {
+  triggers {
+    lb_internal_ip = "${openstack_lb_loadbalancer_v2.kubernetes_lb.vip_address}"
+    lb_public_ip   = "${openstack_networking_floatingip_v2.kubernetes_api.address}"
+  }
+
   provisioner "local-exec" {
     command = <<CMD
 cd ../../
 ./scripts/controller.sh
+./scripts/user_kubectl.sh
 CMD
 
     environment {
       CONTROLLER_HOSTS            = "${join(",", local.fixed_ips)}"
-      KUBERNETES_PUBLIC_ADDRESS   = "${openstack_networking_floatingip_v2.kubernetes-api.address}"
+      KUBERNETES_PUBLIC_ADDRESS   = "${openstack_networking_floatingip_v2.kubernetes_api.address}"
       KUBERNETES_INTERNAL_ADDRESS = "${openstack_lb_loadbalancer_v2.kubernetes_lb.vip_address}"
     }
   }
@@ -90,7 +96,7 @@ CMD
 
 resource "null_resource" "provision" {
   count      = "${var.instance_count}"
-  depends_on = ["null_resource.certs"]
+  depends_on = ["null_resource.config"]
 
   connection {
     host = "${element(openstack_compute_floatingip_associate_v2.main.*.floating_ip, count.index)}"
@@ -98,7 +104,8 @@ resource "null_resource" "provision" {
   }
 
   triggers {
-    host_id = "${element(openstack_compute_instance_v2.main.*.id, count.index)}"
+    host_id   = "${element(openstack_compute_instance_v2.main.*.id, count.index)}"
+    config_id = "${null_resource.config.id}"
   }
 
   provisioner "file" {
@@ -198,7 +205,7 @@ resource "openstack_networking_secgroup_rule_v2" "kubernetes_api" {
   security_group_id = "${openstack_networking_secgroup_v2.kubernetes_lb.id}"
 }
 
-resource "openstack_networking_floatingip_v2" "kubernetes-api" {
+resource "openstack_networking_floatingip_v2" "kubernetes_api" {
   pool    = "floating"
   port_id = "${openstack_lb_loadbalancer_v2.kubernetes_lb.vip_port_id}"
 }
