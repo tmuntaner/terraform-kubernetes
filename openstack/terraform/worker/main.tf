@@ -318,3 +318,10 @@ EOF
     ]
   }
 }
+
+resource "openstack_networking_router_route_v2" "router_route_1" {
+  count            = "${var.instance_count}"
+  router_id        = "${var.router_id}"
+  destination_cidr = "10.200.${count.index}.0/24"
+  next_hop         = "${element(openstack_compute_instance_v2.main.*.network.0.fixed_ip_v4, count.index)}"
+}

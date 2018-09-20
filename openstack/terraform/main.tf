@@ -55,5 +55,7 @@ module "worker" {
   cluster_name                = "${random_pet.cluster_name.id}"
   keypair                     = "${var.keypair}"
   network_name                = "${module.network.network_name}"
+  router_id                   = "${module.network.router_id}"
+  subnet_id                   = "${module.network.subnet_id}"
   kubernetes_internal_address = "${module.controller.kubernetes_api_public_ip}"
 }

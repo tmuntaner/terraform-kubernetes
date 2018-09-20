@@ -1,5 +1,7 @@
 variable "cluster_name" {}
 variable "network_name" {}
+variable "subnet_id" {}
+variable "router_id" {}
 variable "keypair" {}
 
 variable "instance_count" {
