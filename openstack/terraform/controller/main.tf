@@ -5,7 +5,7 @@ locals {
 
 resource "openstack_compute_secgroup_v2" "main" {
   name        = "${var.cluster_name}-kubernetes-controller"
-  description = "kubernetes etcd"
+  description = "kubernetes controller"
 
   rule {
     from_port   = 22
@@ -177,4 +177,54 @@ CMD
       "sudo systemctl restart kube-apiserver kube-controller-manager kube-scheduler",
     ]
   }
+}
+
+# Load Balancer
+
+resource "openstack_networking_secgroup_v2" "kubernetes_lb" {
+  name        = "${var.cluster_name}-kubernetes-lb"
+  description = "Kubernetes Load Balancer Security Group"
+}
+
+resource "openstack_networking_secgroup_rule_v2" "kubernetes_api" {
+  direction         = "ingress"
+  ethertype         = "IPv4"
+  protocol          = "tcp"
+  port_range_min    = 6443
+  port_range_max    = 6443
+  remote_ip_prefix  = "0.0.0.0/0"
+  security_group_id = "${openstack_networking_secgroup_v2.kubernetes_lb.id}"
+}
+
+resource "openstack_networking_floatingip_v2" "kubernetes-api" {
+  pool    = "floating"
+  port_id = "${openstack_lb_loadbalancer_v2.kubernetes_lb.vip_port_id}"
+}
+
+resource "openstack_lb_loadbalancer_v2" "kubernetes_lb" {
+  name               = "${var.cluster_name}-kubernetes"
+  vip_subnet_id      = "${var.subnet_id}"
+  security_group_ids = ["${openstack_networking_secgroup_v2.kubernetes_lb.id}"]
+}
+
+resource "openstack_lb_pool_v2" "kubernetes_api" {
+  protocol    = "TCP"
+  lb_method   = "ROUND_ROBIN"
+  listener_id = "${openstack_lb_listener_v2.kubernetes_api.id}"
+}
+
+resource "openstack_lb_listener_v2" "kubernetes_api" {
+  name            = "${var.cluster_name}-kubernetes-api-listener"
+  protocol        = "TCP"
+  protocol_port   = 6443
+  loadbalancer_id = "${openstack_lb_loadbalancer_v2.kubernetes_lb.id}"
+}
+
+resource "openstack_lb_member_v2" "kubernetes_api" {
+  count         = "${var.instance_count}"
+  name          = "${var.cluster_name}-kubernetes-api-${count.index}"
+  pool_id       = "${openstack_lb_pool_v2.kubernetes_api.id}"
+  address       = "${element(openstack_compute_instance_v2.main.*.network.0.fixed_ip_v4, count.index)}"
+  protocol_port = 6443
+  subnet_id     = "${var.subnet_id}"
 }

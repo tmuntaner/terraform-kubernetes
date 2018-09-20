@@ -1,4 +1,5 @@
 variable "cluster_name" {}
+variable "subnet_id" {}
 variable "network_name" {}
 variable "keypair" {}
 

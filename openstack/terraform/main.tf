@@ -47,4 +47,5 @@ module "controller" {
   keypair                    = "${var.keypair}"
   network_name               = "${module.network.network_name}"
   etcd_instance_ip_addresses = "${module.etcd.etcd_instance_ip_addresses}"
+  subnet_id                  = "${module.network.subnet_id}"
 }
