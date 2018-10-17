@@ -2,7 +2,8 @@
 
 **Prerequisites:**
 
-* Install Cloudflare's PKI and TLS Toolkit [CFSSL](https://github.com/cloudflare/cfssl).
+- Install Cloudflare's PKI and TLS Toolkit [CFSSL](https://github.com/cloudflare/cfssl).
+
 ```bash
 go get -u github.com/cloudflare/cfssl/cmd/cfssl
 go get -u github.com/cloudflare/cfssl/cmd/cfssljson
@@ -47,5 +48,6 @@ subjects:
     kind: User
     name: kubernetes
 EOF
+kubectl apply --kubeconfig admin.kubeconfig  -f flannel.yml
 kubectl create --kubeconfig admin.kubeconfig -f https://storage.googleapis.com/kubernetes-the-hard-way/kube-dns.yaml
 ```

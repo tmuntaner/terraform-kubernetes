@@ -17,6 +17,13 @@ resource "openstack_compute_secgroup_v2" "main" {
   }
 
   rule {
+    from_port   = 1
+    to_port     = 65535
+    ip_protocol = "udp"
+    cidr        = "0.0.0.0/0"
+  }
+
+  rule {
     from_port   = -1
     to_port     = -1
     ip_protocol = "icmp"
@@ -181,41 +188,6 @@ EOF
     ]
   }
 
-  # CNI Networking
-  provisioner "remote-exec" {
-    inline = [
-      <<CAT
-cat <<EOF | sudo tee /etc/cni/net.d/10-bridge.conf
-{
-    "cniVersion": "0.3.1",
-    "name": "bridge",
-    "type": "bridge",
-    "bridge": "cnio0",
-    "isGateway": true,
-    "ipMasq": true,
-    "ipam": {
-        "type": "host-local",
-        "ranges": [
-          [{"subnet": "10.200.${count.index}.0/24"}]
-        ],
-        "routes": [{"dst": "0.0.0.0/0"}]
-    }
-}
-EOF
-      CAT
-      ,
-      <<CAT
-cat <<EOF | sudo tee /etc/cni/net.d/99-loopback.conf
-{
-    "cniVersion": "0.3.1",
-    "type": "loopback"
-}
-EOF
-    CAT
-      ,
-    ]
-  }
-
   # kubelet
   provisioner "remote-exec" {
     inline = [
@@ -317,11 +289,4 @@ EOF
       "sudo systemctl restart containerd kubelet kube-proxy",
     ]
   }
-}
-
-resource "openstack_networking_router_route_v2" "router_route_1" {
-  count            = "${var.instance_count}"
-  router_id        = "${var.router_id}"
-  destination_cidr = "10.200.${count.index}.0/24"
-  next_hop         = "${element(openstack_compute_instance_v2.main.*.network.0.fixed_ip_v4, count.index)}"
 }

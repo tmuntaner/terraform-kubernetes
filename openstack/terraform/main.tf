@@ -25,25 +25,23 @@ provider "template" {
   version = "~> 1.0"
 }
 
-resource "random_pet" "cluster_name" {}
-
 module "network" {
   source              = "./network"
   subnet_cidr         = "${var.subnet_cidr}"
-  cluster_name        = "${random_pet.cluster_name.id}"
+  cluster_name        = "${var.cluster_name}"
   external_network_id = "${var.external_network_id}"
 }
 
 module "etcd" {
   source       = "./etcd"
-  cluster_name = "${random_pet.cluster_name.id}"
+  cluster_name = "${var.cluster_name}"
   keypair      = "${var.keypair}"
   network_name = "${module.network.network_name}"
 }
 
 module "controller" {
   source                     = "./controller"
-  cluster_name               = "${random_pet.cluster_name.id}"
+  cluster_name               = "${var.cluster_name}"
   keypair                    = "${var.keypair}"
   network_name               = "${module.network.network_name}"
   etcd_instance_ip_addresses = "${module.etcd.etcd_instance_ip_addresses}"
@@ -52,7 +50,7 @@ module "controller" {
 
 module "worker" {
   source                      = "./worker"
-  cluster_name                = "${random_pet.cluster_name.id}"
+  cluster_name                = "${var.cluster_name}"
   keypair                     = "${var.keypair}"
   network_name                = "${module.network.network_name}"
   router_id                   = "${module.network.router_id}"
