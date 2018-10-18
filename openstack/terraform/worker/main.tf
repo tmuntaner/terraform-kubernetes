@@ -144,142 +144,26 @@ resource "null_resource" "provision" {
   # TODO: move to packer
   provisioner "remote-exec" {
     inline = [
+      "sudo mv ca.pem /var/lib/kubernetes/",
       "sudo mkdir -p /etc/containerd/",
-      <<CAT
-cat << EOF | sudo tee /etc/containerd/config.toml
-[plugins]
-  [plugins.cri.containerd]
-    snapshotter = "overlayfs"
-    [plugins.cri.containerd.default_runtime]
-      runtime_type = "io.containerd.runtime.v1.linux"
-      runtime_engine = "/usr/local/bin/runc"
-      runtime_root = ""
-    [plugins.cri.containerd.untrusted_workload_runtime]
-      runtime_type = "io.containerd.runtime.v1.linux"
-      runtime_engine = "/usr/local/bin/runsc"
-      runtime_root = "/run/containerd/runsc"
-EOF
-    CAT
-      ,
-      <<CAT
-cat <<EOF | sudo tee /etc/systemd/system/containerd.service
-[Unit]
-Description=containerd container runtime
-Documentation=https://containerd.io
-After=network.target
-
-[Service]
-ExecStartPre=/sbin/modprobe overlay
-ExecStart=/bin/containerd
-Restart=always
-RestartSec=5
-Delegate=yes
-KillMode=process
-OOMScoreAdjust=-999
-LimitNOFILE=1048576
-LimitNPROC=infinity
-LimitCORE=infinity
-
-[Install]
-WantedBy=multi-user.target
-EOF
-    CAT
-      ,
-    ]
-  }
-
-  # kubelet
-  provisioner "remote-exec" {
-    inline = [
       "sudo mv worker-${count.index}-key.pem worker-${count.index}.pem /var/lib/kubelet/",
       "sudo mv worker-${count.index}.kubeconfig /var/lib/kubelet/kubeconfig",
-      "sudo mv ca.pem /var/lib/kubernetes/",
-      <<CAT
-cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
-kind: KubeletConfiguration
-apiVersion: kubelet.config.k8s.io/v1beta1
-authentication:
-  anonymous:
-    enabled: false
-  webhook:
-    enabled: true
-  x509:
-    clientCAFile: "/var/lib/kubernetes/ca.pem"
-authorization:
-  mode: Webhook
-clusterDomain: "cluster.local"
-clusterDNS:
-  - "10.32.0.10"
-podCIDR: "10.200.${count.index}.0/24"
-runtimeRequestTimeout: "15m"
-tlsCertFile: "/var/lib/kubelet/worker-${count.index}.pem"
-tlsPrivateKeyFile: "/var/lib/kubelet/worker-${count.index}-key.pem"
-EOF
-      CAT
-      ,
-      <<CAT
-cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
-[Unit]
-Description=Kubernetes Kubelet
-Documentation=https://github.com/kubernetes/kubernetes
-After=containerd.service
-Requires=containerd.service
-
-[Service]
-ExecStart=/usr/local/bin/kubelet \\
-  --config=/var/lib/kubelet/kubelet-config.yaml \\
-  --container-runtime=remote \\
-  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
-  --image-pull-progress-deadline=2m \\
-  --kubeconfig=/var/lib/kubelet/kubeconfig \\
-  --network-plugin=cni \\
-  --register-node=true \\
-  --v=2
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-EOF
-      CAT
-      ,
+      "sudo mv kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig",
     ]
   }
 
-  # Kubernetes Proxy
-  # TODO: move to packer
-  provisioner "remote-exec" {
-    inline = [
-      "sudo mv kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig",
-      <<CAT
-cat <<EOF | sudo tee /var/lib/kube-proxy/kube-proxy-config.yaml
-kind: KubeProxyConfiguration
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-clientConnection:
-  kubeconfig: "/var/lib/kube-proxy/kubeconfig"
-mode: "iptables"
-clusterCIDR: "10.200.0.0/16"
-EOF
-      CAT
-      ,
-      <<CAT
-cat <<EOF | sudo tee /etc/systemd/system/kube-proxy.service
-[Unit]
-Description=Kubernetes Kube Proxy
-Documentation=https://github.com/kubernetes/kubernetes
+  provisioner "local-exec" {
+    command = <<CMD
+ansible-playbook -i $NODE_IP, -u opensuse -s playbook-worker.yml -e worker_index="$WORKER_INDEX"
+CMD
 
-[Service]
-ExecStart=/usr/local/bin/kube-proxy \\
-  --config=/var/lib/kube-proxy/kube-proxy-config.yaml
-Restart=on-failure
-RestartSec=5
+    working_dir = "../../ansible"
 
-[Install]
-WantedBy=multi-user.target
-EOF
-      CAT
-      ,
-    ]
+    environment {
+      ANSIBLE_HOST_KEY_CHECKING = "False"
+      WORKER_INDEX              = "${count.index}"
+      NODE_IP                   = "${element(openstack_networking_floatingip_v2.main.*.address, count.index)}"
+    }
   }
 
   provisioner "remote-exec" {
