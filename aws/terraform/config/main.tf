@@ -3,11 +3,11 @@ resource "null_resource" "generate_config" {
     command = <<CMD
 rm -f tmp/*.pem tmp/*.csr tmp/*.json tmp/*.kubeconfig admin.kubeconfig
 cd tmp
-../../../scripts/certs.sh
-../../../scripts/server_kubectl.sh
-../../../scripts/configs.sh
+../../scripts/certs.sh
+../../scripts/server_kubectl.sh
+../../scripts/configs.sh
 cd ..
-./../../scripts/user_kubectl.sh
+./../scripts/user_kubectl.sh
 CMD
 
     environment {

@@ -4,3 +4,6 @@ terraform.tfstate*
 .vscode
 admin.kubeconfig
 clouds.yaml
+terraform.tfvars
+
+ca-config.json
