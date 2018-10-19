@@ -8,3 +8,10 @@
   service:
     name: etcd
     enabled: yes
+
+- name: Mount the etcd data directory
+  mount:
+    path: /var/lib/etcd
+    src: /dev/vdb
+    fstype: ext4
+    state: mounted

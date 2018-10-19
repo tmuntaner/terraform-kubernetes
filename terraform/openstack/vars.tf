@@ -4,7 +4,6 @@ variable "openstack_password" {}
 variable "openstack_auth_url" {}
 variable "regcode" {}
 variable "keypair" {}
-variable "subnet_id" {}
 variable "cluster_name" {}
 
 variable "subnet_cidr" {
@@ -13,3 +12,6 @@ variable "subnet_cidr" {
 }
 
 variable "external_network_id" {}
+variable "etcd_data_volume_1" {}
+variable "etcd_data_volume_2" {}
+variable "etcd_data_volume_3" {}

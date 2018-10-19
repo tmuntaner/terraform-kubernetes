@@ -33,10 +33,11 @@ module "network" {
 }
 
 module "etcd" {
-  source       = "./etcd"
-  cluster_name = "${var.cluster_name}"
-  keypair      = "${var.keypair}"
-  network_name = "${module.network.network_name}"
+  source            = "./etcd"
+  cluster_name      = "${var.cluster_name}"
+  keypair           = "${var.keypair}"
+  network_name      = "${module.network.network_name}"
+  etcd_data_volumes = ["${var.etcd_data_volume_1}", "${var.etcd_data_volume_2}", "${var.etcd_data_volume_3}"]
 }
 
 module "controller" {

@@ -2,6 +2,6 @@ variable "cluster_name" {}
 variable "network_name" {}
 variable "keypair" {}
 
-variable "instance_count" {
-  default = 3
+variable "etcd_data_volumes" {
+  type = "list"
 }

@@ -2,8 +2,14 @@ openstack_tenant = "project-name"
 openstack_username = "username"
 openstack_password = "password"
 openstack_auth_url = ""
-keypair = "keypair"
-master_instance_count = 1
-worker_instance_count = 2
-subnet_id = "subnet id"
+
+# The SSH keypair used to bootstrap the system
+keypair = ""
+
+# The network in openstack exposed to the external network (floating)
 external_network_id = ""
+
+# RMT data volumes
+etcd_data_volume_1 = ""
+etcd_data_volume_2 = ""
+etcd_data_volume_3 = ""

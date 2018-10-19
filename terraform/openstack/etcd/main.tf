@@ -38,7 +38,7 @@ resource "openstack_compute_secgroup_v2" "etcd" {
 }
 
 resource "openstack_compute_instance_v2" "etcd" {
-  count           = "${var.instance_count}"
+  count           = 3
   name            = "${var.cluster_name}-etcd-${count.index}"
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
@@ -59,13 +59,21 @@ resource "openstack_compute_instance_v2" "etcd" {
   }
 }
 
+// ansible will mount /dev/vdb to /var/lib/etcd
+resource "openstack_compute_volume_attach_v2" "data" {
+  count       = 3
+  instance_id = "${element(openstack_compute_instance_v2.etcd.*.id, count.index)}"
+  volume_id   = "${element(var.etcd_data_volumes, count.index)}"
+  device      = "/dev/vdb"
+}
+
 resource "openstack_networking_floatingip_v2" "etcd" {
-  count = "${var.instance_count}"
+  count = 3
   pool  = "floating"
 }
 
 resource "openstack_compute_floatingip_associate_v2" "etcd" {
-  count                 = "${var.instance_count}"
+  count                 = 3
   floating_ip           = "${element(openstack_networking_floatingip_v2.etcd.*.address, count.index)}"
   instance_id           = "${element(openstack_compute_instance_v2.etcd.*.id, count.index)}"
   fixed_ip              = "${element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index)}"
@@ -73,7 +81,7 @@ resource "openstack_compute_floatingip_associate_v2" "etcd" {
 }
 
 data "template_file" "etcd_node_name" {
-  count    = "${var.instance_count}"
+  count    = 3
   template = "ip-$${clean_ip}"
 
   vars {
@@ -82,7 +90,7 @@ data "template_file" "etcd_node_name" {
 }
 
 data "template_file" "etcd_node" {
-  count    = "${var.instance_count}"
+  count    = 3
   template = "$${etcd_node_name}=https://$${etcd_ip}:2380"
 
   vars {
@@ -105,8 +113,8 @@ CMD
 }
 
 resource "null_resource" "provision" {
-  count      = "${var.instance_count}"
-  depends_on = ["null_resource.certs"]
+  count      = 3
+  depends_on = ["null_resource.certs", "openstack_compute_volume_attach_v2.data"]
 
   connection {
     host = "${element(openstack_compute_floatingip_associate_v2.etcd.*.floating_ip, count.index)}"
