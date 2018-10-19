@@ -82,8 +82,11 @@ CMD
 }
 
 resource "null_resource" "config" {
-  count    = "${var.instance_count}"
-  triggers = {}
+  count = "${var.instance_count}"
+
+  triggers = {
+    host_id = "${element(openstack_compute_instance_v2.main.*.id, count.index)}"
+  }
 
   provisioner "local-exec" {
     command = <<CMD
