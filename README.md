@@ -70,3 +70,11 @@ kubectl apply --kubeconfig admin.kubeconfig -f manifests/dns.yaml
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/helm-rbac-config.yaml
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/cloud-controller-openstack.yaml
 ```
+
+## Nginx Ingress
+
+```bash
+kubectl apply --kubeconfig admin.kubeconfig -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
+kubectl apply --kubeconfig admin.kubeconfig -f manifests/nginx-ingress.yaml
+kubectl apply --kubeconfig admin.kubeconfig -f manifests/example-ingress.yaml
+```
