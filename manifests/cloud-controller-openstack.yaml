@@ -1,0 +1,166 @@
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: cloud-controller-manager
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - events
+        verbs:
+          - create
+          - patch
+          - update
+      - apiGroups:
+          - ""
+        resources:
+          - nodes
+        verbs:
+          - "*"
+      - apiGroups:
+          - ""
+        resources:
+          - nodes/status
+        verbs:
+          - patch
+      - apiGroups:
+          - ""
+        resources:
+          - services
+        verbs:
+          - list
+          - patch
+          - update
+          - watch
+      - apiGroups:
+          - ""
+        resources:
+          - serviceaccounts
+        verbs:
+          - create
+      - apiGroups:
+          - ""
+        resources:
+          - persistentvolumes
+        verbs:
+          - get
+          - list
+          - update
+          - watch
+      - apiGroups:
+          - ""
+        resources:
+          - secrets
+        verbs:
+          - get
+          - list
+      - apiGroups:
+          - ""
+        resources:
+          - endpoints
+        verbs:
+          - create
+          - get
+          - list
+          - watch
+          - update
+      - apiGroups:
+          - ""
+        resources:
+          - endpoints
+          - namespaces
+          - configmaps
+          - serviceaccounts
+        verbs:
+          - get
+kind: List
+metadata: {}
+---
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: system:cloud-controller-manager
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: cloud-controller-manager
+    subjects:
+      - kind: ServiceAccount
+        name: cloud-controller-manager
+        namespace: kube-system
+kind: List
+metadata: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cloud-controller-manager
+  namespace: kube-system
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
+  labels:
+    component: cloud-controller-manager
+    tier: control-plane
+  name: openstack-cloud-controller-manager
+  namespace: kube-system
+spec:
+  serviceAccountName: cloud-controller-manager
+  containers:
+    - name: openstack-cloud-controller-manager
+      image: docker.io/k8scloudprovider/openstack-cloud-controller-manager:latest
+      args:
+        - /bin/openstack-cloud-controller-manager
+        - --v=2
+        - --cloud-config=/etc/cloud/cloud-config.conf
+        - --configure-cloud-routes=false
+        - --cloud-provider=openstack
+        - --use-service-account-credentials=true
+        - --kubeconfig=/etc/kubernetes/cloud-controller-manager.conf
+        - --leader-elect=true
+      volumeMounts:
+        - mountPath: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
+          name: flexvolume-dir
+        - mountPath: /var/run/kubernetes
+          name: cache-volume
+        - mountPath: /etc/cloud/cloud-config.conf
+          name: cloudconfig
+          readOnly: true
+        - mountPath: /etc/kubernetes/cloud-controller-manager.conf
+          name: kubeconfig
+          readOnly: true
+        - mountPath: /etc/ssl/certs/cloud-trust.pem
+          name: cloudtrust
+          readOnly: true
+      resources:
+        requests:
+          cpu: 200m
+  hostNetwork: true
+  securityContext:
+    runAsUser: 1001
+  volumes:
+    - hostPath:
+        path: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
+        type: DirectoryOrCreate
+      name: flexvolume-dir
+    - hostPath:
+        path: /etc/kubernetes/cloud-controller-manager.conf
+        type: FileOrCreate
+      name: kubeconfig
+    - hostPath:
+        path: /etc/cloud/cloud-config.conf
+        type: FileOrCreate
+      name: cloudconfig
+    - hostPath:
+        path: /etc/cloud/cloud-trust.pem
+        type: FileOrCreate
+      name: cloudtrust
+    - name: cache-volume
+      emptyDir: {}

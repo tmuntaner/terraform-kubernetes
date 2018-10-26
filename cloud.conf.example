@@ -1,0 +1,10 @@
+[Global]
+auth-url=https://<Keystone endpoint>:5000/v3
+domain-id=<your-domain-id>
+tenant-id=<your-project-id>
+username=<name>
+password=<pass>
+
+[LoadBalancer]
+subnet-id=<your-nodes-subnet-id>
+floating-network-id=<public-network-id>

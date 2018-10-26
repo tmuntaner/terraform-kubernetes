@@ -124,6 +124,21 @@ resource "null_resource" "provision" {
   }
 
   provisioner "file" {
+    source      = "../../cloud.conf"
+    destination = "cloud-config.conf"
+  }
+
+  provisioner "file" {
+    source      = "../../cloud-trust.pem"
+    destination = "cloud-trust.pem"
+  }
+
+  provisioner "file" {
+    source      = "../../data/config/cloud-controller-manager.kubeconfig"
+    destination = "cloud-controller-manager.kubeconfig"
+  }
+
+  provisioner "file" {
     source      = "../../data/keys/worker-${count.index}-key.pem"
     destination = "worker-${count.index}-key.pem"
   }
@@ -152,6 +167,10 @@ resource "null_resource" "provision" {
       "sudo mv worker-${count.index}-key.pem worker-${count.index}.pem /var/lib/kubelet/",
       "sudo mv worker-${count.index}.kubeconfig /var/lib/kubelet/kubeconfig",
       "sudo mv kube-proxy.kubeconfig /var/lib/kube-proxy/kubeconfig",
+      "sudo mkdir /etc/cloud",
+      "sudo mv cloud-config.conf cloud-trust.pem /etc/cloud/",
+      "sudo mkdir /etc/kubernetes",
+      "sudo mv cloud-controller-manager.kubeconfig /etc/kubernetes/cloud-controller-manager.kubeconfig",
     ]
   }
 
