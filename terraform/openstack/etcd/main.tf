@@ -45,7 +45,7 @@ resource "openstack_compute_instance_v2" "etcd" {
   security_groups = ["${openstack_compute_secgroup_v2.etcd.name}"]
 
   block_device {
-    uuid                  = "25cfaac8-1e51-450c-af25-7423cca43677"
+    uuid                  = "${var.image_id}"
     source_type           = "image"
     volume_size           = 40
     boot_index            = 0

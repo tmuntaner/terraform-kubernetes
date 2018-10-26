@@ -39,7 +39,7 @@ resource "openstack_compute_instance_v2" "main" {
   security_groups = ["${openstack_compute_secgroup_v2.main.name}"]
 
   block_device {
-    uuid                  = "02fd282d-f755-4a66-b5de-eb7cf117e927"
+    uuid                  = "${var.image_id}"
     source_type           = "image"
     volume_size           = 40
     boot_index            = 0

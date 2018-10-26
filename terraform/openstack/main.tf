@@ -38,6 +38,7 @@ module "etcd" {
   keypair           = "${var.keypair}"
   network_name      = "${module.network.network_name}"
   etcd_data_volumes = ["${var.etcd_data_volume_1}", "${var.etcd_data_volume_2}", "${var.etcd_data_volume_3}"]
+  image_id          = "${var.etcd_image_id}"
 }
 
 module "controller" {
@@ -47,6 +48,7 @@ module "controller" {
   network_name               = "${module.network.network_name}"
   etcd_instance_ip_addresses = "${module.etcd.etcd_instance_ip_addresses}"
   subnet_id                  = "${module.network.subnet_id}"
+  image_id                   = "${var.controller_image_id}"
 }
 
 module "worker" {
@@ -57,4 +59,5 @@ module "worker" {
   router_id                   = "${module.network.router_id}"
   subnet_id                   = "${module.network.subnet_id}"
   kubernetes_internal_address = "${module.controller.kubernetes_api_public_ip}"
+  image_id                    = "${var.worker_image_id}"
 }

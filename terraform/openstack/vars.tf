@@ -15,3 +15,7 @@ variable "external_network_id" {}
 variable "etcd_data_volume_1" {}
 variable "etcd_data_volume_2" {}
 variable "etcd_data_volume_3" {}
+
+variable "etcd_image_id" {}
+variable "controller_image_id" {}
+variable "worker_image_id" {}

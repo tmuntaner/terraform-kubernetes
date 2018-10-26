@@ -9,7 +9,12 @@ keypair = ""
 # The network in openstack exposed to the external network (floating)
 external_network_id = ""
 
-# RMT data volumes
+# ETCD data volumes
 etcd_data_volume_1 = ""
 etcd_data_volume_2 = ""
 etcd_data_volume_3 = ""
+
+# Openstack Image Ids for Servers
+etcd_image_id = ""
+controller_image_id = ""
+worker_image_id = ""
