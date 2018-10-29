@@ -67,8 +67,22 @@ sudo mkfs.ext4 /dev/vdd
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/cluster-roles.yaml
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/flannel.yaml
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/dns.yaml
+```
+
+## Helm
+
+```bash
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/helm-rbac-config.yaml
+helm init --service-account tiller
+```
+
+## Openstack Cloud Controller
+
+```bash
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/cloud-controller-openstack.yaml
+kubectl apply --kubeconfig admin.kubeconfig -f manifests/csi-provisioner.yaml
+kubectl apply --kubeconfig admin.kubeconfig -f manifests/csi-nodeplugin.yaml
+kubectl apply --kubeconfig admin.kubeconfig -f manifests/csi-attacher.yaml
 ```
 
 ## Nginx Ingress

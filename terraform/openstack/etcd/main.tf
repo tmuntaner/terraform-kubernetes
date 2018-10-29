@@ -43,15 +43,7 @@ resource "openstack_compute_instance_v2" "etcd" {
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
   security_groups = ["${openstack_compute_secgroup_v2.etcd.name}"]
-
-  block_device {
-    uuid                  = "${var.image_id}"
-    source_type           = "image"
-    volume_size           = 40
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
+  image_id        = "${var.image_id}"
 
   network {
     name        = "${var.network_name}"
