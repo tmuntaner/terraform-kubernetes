@@ -92,3 +92,21 @@ kubectl apply --kubeconfig admin.kubeconfig -f https://raw.githubusercontent.com
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/nginx-ingress.yaml
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/example-ingress.yaml
 ```
+
+## Prometheus
+
+```bash
+helm install stable/prometheus-operator --name prometheus-operator --namespace monitoring
+kubectl apply --kubeconfig admin.kubeconfig -f manifests/prometheus-services-ingress.yaml
+```
+
+To Delete:
+
+```bash
+kubectl delete --kubeconfig admin.kubeconfig -f manifests/prometheus-services-ingress.yaml
+helm delete prometheus-operator
+kubectl delete crd prometheuses.monitoring.coreos.com
+kubectl delete crd prometheusrules.monitoring.coreos.com
+kubectl delete crd servicemonitors.monitoring.coreos.com
+kubectl delete crd alertmanagers.monitoring.coreos.com
+```

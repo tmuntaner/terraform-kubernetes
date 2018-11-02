@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: monitoring
+spec:
+  rules:
+    - host: prometheus.scc-incubator.scc.suse.de
+      http:
+        paths:
+          - backend:
+              serviceName: prometheus-operated
+              servicePort: 9090
+    - host: grafana.scc-incubator.scc.suse.de
+      http:
+        paths:
+          - backend:
+              serviceName: prometheus-operator-grafana
+              servicePort: 80
