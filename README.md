@@ -114,3 +114,9 @@ kubectl delete crd alertmanagers.monitoring.coreos.com
 ```bash
 helm install stable/kubernetes-dashboard --name kubernetes-dashboard --namespace kubernetes-dashboard -f helm-config/kubernetes-dashboard.yaml
 ```
+
+## Sentry
+
+```bash
+ helm install stable/sentry --name sentry --namespace sentry -f helm-config/sentry.yaml --wait
+```

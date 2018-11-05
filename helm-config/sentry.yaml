@@ -1,0 +1,46 @@
+user:
+  create: true
+  email: admin@sentry.local
+
+email:
+  from_address: sentry@sentry.local
+  host: smtp
+  port: 25
+  use_tls: false
+  ? user
+  ? password
+  enable_replies: false
+
+persistence:
+  enabled: true
+  storageClass: "standard"
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+ingress:
+  enabled: truy
+  hostname: sentry.scc-incubator.scc.suse.de
+  annotations: {}
+  tls: []
+
+postgresql:
+  postgresDatabase: sentry
+  postgresUser: sentry
+  imageTag: "9.5"
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+
+redis:
+  master:
+    persistence:
+      enabled: true
+      storageClass: "standard"
+      accessMode: ReadWriteOnce
+      size: 10Gi
+
+config:
+  configYml: ""
+  sentryConfPy: ""
