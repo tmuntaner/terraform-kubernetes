@@ -31,7 +31,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: nginx-ingress
+  name: hello-world-ingress
 spec:
   rules:
     - host: www.barfoo.com
