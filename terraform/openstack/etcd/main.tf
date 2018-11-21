@@ -1,7 +1,26 @@
 locals {
-  fixed_ips       = "${formatlist("%v", openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4)}"
+  fixed_ips       = ["10.240.8.10", "10.240.8.11", "10.240.8.12"]
   etcd_nodes      = "${formatlist("%v", data.template_file.etcd_node.*.rendered)}"
   etcd_node_names = "${formatlist("%v", data.template_file.etcd_node_name.*.rendered)}"
+}
+
+data "template_file" "etcd_node_name" {
+  count    = 3
+  template = "ip-$${clean_ip}"
+
+  vars {
+    clean_ip = "${replace(element(local.fixed_ips, count.index), ".", "-")}"
+  }
+}
+
+data "template_file" "etcd_node" {
+  count    = 3
+  template = "$${etcd_node_name}=https://$${etcd_ip}:2380"
+
+  vars {
+    etcd_node_name = "${element(local.etcd_node_names, count.index)}"
+    etcd_ip        = "${element(local.fixed_ips, count.index)}"
+  }
 }
 
 resource "openstack_compute_secgroup_v2" "etcd" {
@@ -37,7 +56,7 @@ resource "openstack_compute_secgroup_v2" "etcd" {
   }
 }
 
-resource "openstack_compute_instance_v2" "etcd" {
+resource "openstack_compute_instance_v2" "main" {
   count           = 3
   name            = "${var.cluster_name}-etcd-${count.index}"
   flavor_name     = "m1.large"
@@ -47,48 +66,29 @@ resource "openstack_compute_instance_v2" "etcd" {
 
   network {
     name        = "${var.network_name}"
-    fixed_ip_v4 = "10.240.8.1${count.index}"
+    fixed_ip_v4 = "${element(local.fixed_ips, count.index)}"
   }
 }
 
 // ansible will mount /dev/vdb to /var/lib/etcd
 resource "openstack_compute_volume_attach_v2" "data" {
   count       = 3
-  instance_id = "${element(openstack_compute_instance_v2.etcd.*.id, count.index)}"
-  volume_id   = "${element(var.etcd_data_volumes, count.index)}"
+  instance_id = "${openstack_compute_instance_v2.main.*.id[count.index]}"
+  volume_id   = "${var.etcd_data_volumes[count.index]}"
   device      = "/dev/vdb"
 }
 
-resource "openstack_networking_floatingip_v2" "etcd" {
+resource "openstack_networking_floatingip_v2" "main" {
   count = 3
   pool  = "floating"
 }
 
-resource "openstack_compute_floatingip_associate_v2" "etcd" {
+resource "openstack_compute_floatingip_associate_v2" "main" {
   count                 = 3
-  floating_ip           = "${element(openstack_networking_floatingip_v2.etcd.*.address, count.index)}"
-  instance_id           = "${element(openstack_compute_instance_v2.etcd.*.id, count.index)}"
-  fixed_ip              = "${element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index)}"
+  floating_ip           = "${openstack_networking_floatingip_v2.main.*.address[count.index]}"
+  instance_id           = "${openstack_compute_instance_v2.main.*.id[count.index]}"
+  fixed_ip              = "${openstack_compute_instance_v2.main.*.network.0.fixed_ip_v4[count.index]}"
   wait_until_associated = true
-}
-
-data "template_file" "etcd_node_name" {
-  count    = 3
-  template = "ip-$${clean_ip}"
-
-  vars {
-    clean_ip = "${replace(element(openstack_compute_instance_v2.etcd.*.network.0.fixed_ip_v4, count.index), ".", "-")}"
-  }
-}
-
-data "template_file" "etcd_node" {
-  count    = 3
-  template = "$${etcd_node_name}=https://$${etcd_ip}:2380"
-
-  vars {
-    etcd_node_name = "${element(local.etcd_node_names, count.index)}"
-    etcd_ip        = "${element(local.fixed_ips, count.index)}"
-  }
 }
 
 resource "null_resource" "certs" {
@@ -109,12 +109,12 @@ resource "null_resource" "provision" {
   depends_on = ["null_resource.certs", "openstack_compute_volume_attach_v2.data"]
 
   connection {
-    host = "${element(openstack_compute_floatingip_associate_v2.etcd.*.floating_ip, count.index)}"
+    host = "${openstack_compute_floatingip_associate_v2.main.*.floating_ip[count.index]}"
     user = "opensuse"
   }
 
   triggers {
-    host_id = "${element(openstack_compute_instance_v2.etcd.*.id, count.index)}"
+    host_id = "${openstack_compute_instance_v2.main.*.id[count.index]}"
   }
 
   provisioner "file" {
@@ -149,7 +149,7 @@ CMD
 
     environment {
       ANSIBLE_HOST_KEY_CHECKING = "False"
-      NODE_IP                   = "${element(openstack_networking_floatingip_v2.etcd.*.address, count.index)}"
+      NODE_IP                   = "${element(openstack_networking_floatingip_v2.main.*.address, count.index)}"
       ETCD_INITIAL_CLUSTER      = "${join(",", local.etcd_nodes)}"
       ETCD_NODE_NAME            = "${element(local.etcd_node_names, count.index)}"
     }
