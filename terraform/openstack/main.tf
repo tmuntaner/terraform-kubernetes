@@ -1,5 +1,12 @@
 terraform {
   required_version = ">= 0.11.0"
+
+  backend "s3" {
+    bucket  = "suse-scc-terraform-state"
+    key     = "kubernetes/openstack.tfstate"
+    region  = "eu-central-1"
+    encrypt = "true"
+  }
 }
 
 provider "openstack" {

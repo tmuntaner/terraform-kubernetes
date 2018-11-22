@@ -1,0 +1,73 @@
+# Entrypoint is needed as image by default sets `terraform` binary as an
+# entrypoint.
+image:
+  name: hashicorp/terraform:0.11.10
+  entrypoint: [""]
+
+variables:
+  TF_WORKSPACE: "production"
+
+cache:
+  paths:
+    - .terraform
+
+before_script:
+  - mkdir -p /etc/openstack
+  - echo $terraform_tfvars_production | base64 -di > terraform/openstack/terraform.tfvars;
+  - echo $cloud_yaml | base64 -di > /etc/openstack/clouds.yaml;
+  - echo $cloud_conf | base64 -di > cloud.conf
+  - echo $cloud_trust_pem | base64 -di > /etc/ssl/certs/cloud-trust.pem;
+  - echo $cloud_trust_pem | base64 -di > cloud-trust.pem;
+  - echo $ca_key | base64 -di > data/keys/ca-key.pem;
+  - echo $ca | base64 -di > data/keys/ca.pem;
+
+stages:
+  - cleanup_images
+  - validate
+  - etcd_deploy
+  - full_deploy
+
+delete_images:
+  stage: cleanup_images
+  image:
+    name: tmuntaner/openstackclient
+    entrypoint: [""]
+  script:
+    - if openstack image list | grep kubernetes-base; then openstack image delete kubernetes-base; fi
+
+validate_production:
+  stage: validate
+  variables:
+    TF_WORKSPACE: production
+  script:
+    - cd terraform/openstack
+    - terraform init
+    - terraform validate
+
+etcd_deploy:
+  stage: etcd_deploy
+  variables:
+    TF_WORKSPACE: production
+  environment:
+    name: production
+  script:
+    - cd terraform/openstack
+    - terraform init
+    - terraform apply -target="module.etcd.openstack_compute_instance_v2.etcd[0]" -auto-approve
+    - terraform apply -target="module.etcd.openstack_compute_instance_v2.etcd[1]" -auto-approve
+    - terraform apply -target="module.etcd.openstack_compute_instance_v2.etcd[2]" -auto-approve
+  only:
+    - master
+
+full_deploy:
+  stage: full_deploy
+  variables:
+    TF_WORKSPACE: production
+  environment:
+    name: production
+  script:
+    - cd terraform/openstack
+    - terraform init
+    - terraform apply -auto-approve
+  only:
+    - master

@@ -6,6 +6,5 @@ admin.kubeconfig
 clouds.yaml
 terraform.tfvars
 
-ca-config.json
 cloud.conf
 *.pem
