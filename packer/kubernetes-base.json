@@ -1,10 +1,13 @@
 {
+  "variables": {
+    "sle_regcode": "{{ env `SLE_REGCODE` }}"
+  },
   "builders": [
     {
       "type": "openstack",
-      "ssh_username": "opensuse",
+      "ssh_username": "sles",
       "image_name": "kubernetes-base",
-      "source_image_name": "openSUSE-Leap-42.3-OpenStack.x86_64",
+      "source_image_name": "SLES15-GM-JeOS",
       "flavor": "m1.small",
       "floating_ip_pool": "floating",
       "networks": ["897dd8d9-0ba3-4fb1-a94b-8e6c8f4274b5"]
@@ -15,9 +18,14 @@
       "type": "shell",
       "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
       "inline": [
-        "zypper --no-gpg-checks ref",
-        "zypper --no-gpg-checks --non-interactive up",
-        "zypper --non-interactive rm containerd docker-img-store-setup docker-libnetwork docker-runc"
+        "echo net.ipv4.ip_forward=1 >> /etc/sysctl.d/50-router.conf",
+        "echo net.ipv6.conf.all.disable_ipv6=1 >> /etc/sysctl.d/50-router.conf",
+        "echo net.ipv6.conf.default.disable_ipv6=1 >> /etc/sysctl.d/50-router.conf",
+        "SUSEConnect -r {{ user `sle_regcode` }}",
+        "zypper --non-interactive up",
+        "zypper --non-interactive in --force-resolution socat conntrack-tools ipset python kernel-default kernel-default-devel kernel-devel kernel-firmware kernel-macros lsof",
+        "zypper --non-interactive rm firewalld",
+        "SUSEConnect --de-register --clean"
       ]
     }
   ]

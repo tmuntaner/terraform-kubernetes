@@ -1,8 +1,11 @@
 {
+  "variables": {
+    "sle_regcode": "{{ env `SLE_REGCODE` }}"
+  },
   "builders": [
     {
       "type": "openstack",
-      "ssh_username": "opensuse",
+      "ssh_username": "sles",
       "image_name": "kubernetes-controller",
       "source_image_name": "kubernetes-base",
       "flavor": "m1.small",
@@ -20,14 +23,17 @@
       "type": "shell",
       "execute_command": "sudo -S sh -c '{{ .Vars }} {{ .Path }}'",
       "inline": [
-        "zypper --no-gpg-checks --non-interactive in nginx",
+        "SUSEConnect -r {{ user `sle_regcode` }}",
+        "zypper --non-interactive up",
+        "zypper --non-interactive in nginx",
+        "SUSEConnect --de-register --clean",
         "mv kubernetes.default.svc.cluster.local.conf /etc/nginx/vhosts.d/kubernetes.default.svc.cluster.local.conf",
         "mkdir -p /var/lib/kubernetes/",
         "mkdir -p /etc/kubernetes/config",
-        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.12.2/bin/linux/amd64/kube-apiserver",
-        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.12.2/bin/linux/amd64/kube-controller-manager",
-        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.12.2/bin/linux/amd64/kube-scheduler",
-        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.12.2/bin/linux/amd64/kubectl",
+        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kube-apiserver",
+        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kube-controller-manager",
+        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kube-scheduler",
+        "wget -q https://storage.googleapis.com/kubernetes-release/release/v1.13.5/bin/linux/amd64/kubectl",
         "chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl",
         "mv kube-apiserver kube-controller-manager kube-scheduler kubectl /usr/local/bin/",
         "systemctl enable nginx"

@@ -3,6 +3,168 @@ items:
   - apiVersion: rbac.authorization.k8s.io/v1
     kind: ClusterRole
     metadata:
+      name: system:cloud-controller-manager
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - events
+        verbs:
+          - create
+          - patch
+          - update
+      - apiGroups:
+          - ""
+        resources:
+          - nodes
+        verbs:
+          - '*'
+      - apiGroups:
+          - ""
+        resources:
+          - nodes/status
+        verbs:
+          - patch
+      - apiGroups:
+          - ""
+        resources:
+          - services
+        verbs:
+          - list
+          - patch
+          - update
+          - watch
+      - apiGroups:
+          - ""
+        resources:
+          - serviceaccounts
+        verbs:
+          - create
+          - get
+      - apiGroups:
+          - ""
+        resources:
+          - persistentvolumes
+        verbs:
+          - '*'
+      - apiGroups:
+          - ""
+        resources:
+          - endpoints
+        verbs:
+          - create
+          - get
+          - list
+          - watch
+          - update
+      - apiGroups:
+          - ""
+        resources:
+          - configmaps
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - ""
+        resources:
+          - secrets
+        verbs:
+          - list
+          - get
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: system:cloud-node-controller
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - nodes
+        verbs:
+          - '*'
+      - apiGroups:
+          - ""
+        resources:
+          - nodes/status
+        verbs:
+          - patch
+      - apiGroups:
+          - ""
+        resources:
+          - events
+        verbs:
+          - create
+          - patch
+          - update
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: system:pvl-controller
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - persistentvolumes
+        verbs:
+          - '*'
+      - apiGroups:
+          - ""
+        resources:
+          - events
+        verbs:
+          - create
+          - patch
+          - update
+kind: List
+metadata: {}
+---
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: system:cloud-node-controller
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: system:cloud-node-controller
+    subjects:
+      - kind: ServiceAccount
+        name: cloud-node-controller
+        namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: system:pvl-controller
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: system:pvl-controller
+    subjects:
+      - kind: ServiceAccount
+        name: pvl-controller
+        namespace: kube-system
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: system:cloud-controller-manager
+    roleRef:
+      apiGroup: rbac.authorization.k8s.io
+      kind: ClusterRole
+      name: system:cloud-controller-manager
+    subjects:
+      - kind: ServiceAccount
+        name: cloud-controller-manager
+        namespace: kube-system
+kind: List
+metadata: {}
+---
+apiVersion: v1
+items:
+  - apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
       name: cloud-controller-manager
     rules:
       - apiGroups:
@@ -28,15 +190,6 @@ items:
       - apiGroups:
           - ""
         resources:
-          - services
-        verbs:
-          - list
-          - patch
-          - update
-          - watch
-      - apiGroups:
-          - ""
-        resources:
           - serviceaccounts
         verbs:
           - create
@@ -56,42 +209,6 @@ items:
         verbs:
           - get
           - list
-      - apiGroups:
-          - ""
-        resources:
-          - endpoints
-        verbs:
-          - create
-          - get
-          - list
-          - watch
-          - update
-      - apiGroups:
-          - ""
-        resources:
-          - endpoints
-          - namespaces
-          - configmaps
-          - serviceaccounts
-        verbs:
-          - get
-kind: List
-metadata: {}
----
-apiVersion: v1
-items:
-  - apiVersion: rbac.authorization.k8s.io/v1
-    kind: ClusterRoleBinding
-    metadata:
-      name: system:cloud-controller-manager
-    roleRef:
-      apiGroup: rbac.authorization.k8s.io
-      kind: ClusterRole
-      name: cloud-controller-manager
-    subjects:
-      - kind: ServiceAccount
-        name: cloud-controller-manager
-        namespace: kube-system
 kind: List
 metadata: {}
 ---
@@ -113,18 +230,20 @@ metadata:
   namespace: kube-system
 spec:
   serviceAccountName: cloud-controller-manager
+  tolerations:
+    - operator: Exists
   containers:
     - name: openstack-cloud-controller-manager
-      image: docker.io/k8scloudprovider/openstack-cloud-controller-manager:v0.3.0
+      image: docker.io/k8scloudprovider/openstack-cloud-controller-manager:1.13.1
       args:
         - /bin/openstack-cloud-controller-manager
         - --v=2
         - --cloud-config=/etc/cloud/cloud-config.conf
-        - --configure-cloud-routes=false
         - --cloud-provider=openstack
         - --use-service-account-credentials=true
         - --kubeconfig=/etc/kubernetes/cloud-controller-manager.conf
-        - --leader-elect=true
+        - --leader-elect=false
+        - --address=127.0.0.1
       volumeMounts:
         - mountPath: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
           name: flexvolume-dir
@@ -132,6 +251,9 @@ spec:
           name: cache-volume
         - mountPath: /etc/cloud/cloud-config.conf
           name: cloudconfig
+          readOnly: true
+        - mountPath: /etc/kubernetes/pki
+          name: k8s-certs
           readOnly: true
         - mountPath: /etc/kubernetes/cloud-controller-manager.conf
           name: kubeconfig
@@ -158,6 +280,14 @@ spec:
         path: /etc/cloud/cloud-config.conf
         type: FileOrCreate
       name: cloudconfig
+    - hostPath:
+        path: /etc/kubernetes/pki
+        type: DirectoryOrCreate
+      name: k8s-certs
+    - hostPath:
+        path: /etc/ssl/certs
+        type: DirectoryOrCreate
+      name: ca-certs
     - hostPath:
         path: /etc/cloud/cloud-trust.pem
         type: FileOrCreate

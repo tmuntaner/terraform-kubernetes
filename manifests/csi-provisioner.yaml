@@ -48,6 +48,7 @@ spec:
   ports:
     - name: dummy
       port: 12345
+
 ---
 kind: StatefulSet
 apiVersion: apps/v1beta1
@@ -65,7 +66,7 @@ spec:
       serviceAccount: csi-provisioner
       containers:
         - name: csi-provisioner
-          image: quay.io/k8scsi/csi-provisioner:v0.3.0
+          image: quay.io/k8scsi/csi-provisioner:v0.4.1
           args:
             - "--provisioner=csi-cinderplugin"
             - "--csi-address=$(ADDRESS)"
@@ -77,12 +78,12 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: cinder
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:latest
+          image: docker.io/k8scloudprovider/cinder-csi-plugin:1.13.1
           args:
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
             - "--endpoint=$(CSI_ENDPOINT)"
-            - "--cloud-config=/etc/cloud/cloud-config.conf"
+            - "--cloud-config=$(CLOUD_CONFIG)"
             - "--v=2"
           env:
             - name: NODE_ID
@@ -91,6 +92,8 @@ spec:
                   fieldPath: spec.nodeName
             - name: CSI_ENDPOINT
               value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/cloud/cloud-config.conf
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /etc/ssl/certs/cloud-trust.pem

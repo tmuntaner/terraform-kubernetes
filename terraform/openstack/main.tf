@@ -3,7 +3,7 @@ terraform {
 
   backend "s3" {
     bucket  = "suse-scc-terraform-state"
-    key     = "kubernetes/openstack.tfstate"
+    key     = "kubernetes/tmuntaner.tfstate"
     region  = "eu-central-1"
     encrypt = "true"
   }

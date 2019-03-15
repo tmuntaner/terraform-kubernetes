@@ -99,7 +99,7 @@ resource "null_resource" "provision" {
 
   connection {
     host = "${element(openstack_compute_floatingip_associate_v2.main.*.floating_ip, count.index)}"
-    user = "opensuse"
+    user = "sles"
   }
 
   triggers {
@@ -168,7 +168,7 @@ resource "null_resource" "provision" {
 
   provisioner "local-exec" {
     command = <<CMD
-ansible-playbook -i $NODE_IP, -u opensuse -s playbook-controller.yml -e etcd_cluster="$ETCD_CLUSTER"
+ansible-playbook -i $NODE_IP, -u sles -s playbook-controller.yml -e etcd_cluster="$ETCD_CLUSTER"
 CMD
 
     working_dir = "../../ansible"

@@ -58,7 +58,7 @@ resource "openstack_compute_secgroup_v2" "etcd" {
 
 resource "openstack_compute_instance_v2" "main" {
   count           = 3
-  name            = "${var.cluster_name}-etcd-${count.index}"
+  name            = "${var.cluster_name}-kubernetes-etcd-${count.index}"
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
   security_groups = ["${openstack_compute_secgroup_v2.etcd.name}"]
@@ -110,7 +110,7 @@ resource "null_resource" "provision" {
 
   connection {
     host = "${openstack_compute_floatingip_associate_v2.main.*.floating_ip[count.index]}"
-    user = "opensuse"
+    user = "sles"
   }
 
   triggers {
@@ -142,7 +142,7 @@ resource "null_resource" "provision" {
 
   provisioner "local-exec" {
     command = <<CMD
-ansible-playbook -i $NODE_IP, -u opensuse -s playbook-etcd.yml -e etcd_node_name=$ETCD_NODE_NAME -e etcd_initial_cluster="$ETCD_INITIAL_CLUSTER"
+ansible-playbook -i $NODE_IP, -u sles -s playbook-etcd.yml -e etcd_node_name=$ETCD_NODE_NAME -e etcd_initial_cluster="$ETCD_INITIAL_CLUSTER"
 CMD
 
     working_dir = "../../ansible"

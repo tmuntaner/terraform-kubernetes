@@ -101,7 +101,7 @@ resource "null_resource" "provision" {
 
   connection {
     host = "${element(openstack_compute_floatingip_associate_v2.main.*.floating_ip, count.index)}"
-    user = "opensuse"
+    user = "sles"
   }
 
   triggers {
@@ -168,7 +168,7 @@ resource "null_resource" "provision" {
 
   provisioner "local-exec" {
     command = <<CMD
-ansible-playbook -i $NODE_IP, -u opensuse -s playbook-worker.yml -e worker_index="$WORKER_INDEX"
+ansible-playbook -i $NODE_IP, -u sles -s playbook-worker.yml -e worker_index="$WORKER_INDEX"
 CMD
 
     working_dir = "../../ansible"

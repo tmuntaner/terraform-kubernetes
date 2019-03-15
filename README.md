@@ -83,14 +83,14 @@ kubectl apply --kubeconfig admin.kubeconfig -f manifests/cloud-controller-openst
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/csi-provisioner.yaml
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/csi-nodeplugin.yaml
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/csi-attacher.yaml
+kubectl apply --kubeconfig admin.kubeconfig -f manifests/storage.yaml
 ```
 
 ## Nginx Ingress
 
 ```bash
-kubectl apply --kubeconfig admin.kubeconfig -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
+kubectl apply --kubeconfig admin.kubeconfig -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/be1329b225803b1106e6ab96f9bd2e6fe7dfa478/deploy/mandatory.yaml
 kubectl apply --kubeconfig admin.kubeconfig -f manifests/nginx-ingress.yaml
-kubectl apply --kubeconfig admin.kubeconfig -f manifests/example-ingress.yaml
 ```
 
 ## Prometheus
@@ -102,7 +102,7 @@ helm install stable/prometheus-operator --name prometheus-operator --namespace m
 To Delete:
 
 ```bash
-helm delete prometheus-operator
+helm delete prometheus-operator --purge
 kubectl delete crd prometheuses.monitoring.coreos.com
 kubectl delete crd prometheusrules.monitoring.coreos.com
 kubectl delete crd servicemonitors.monitoring.coreos.com
@@ -112,11 +112,11 @@ kubectl delete crd alertmanagers.monitoring.coreos.com
 ## Kubernetes Dashboard
 
 ```bash
-helm install stable/kubernetes-dashboard --name kubernetes-dashboard --namespace kubernetes-dashboard -f helm-config/kubernetes-dashboard.yaml
+helm install stable/kubernetes-dashboard --name kubernetes-dashboard --namespace kube-system -f helm-config/kubernetes-dashboard.yaml
 ```
 
 ## Sentry
 
 ```bash
- helm install stable/sentry --name sentry --namespace sentry -f helm-config/sentry.yaml --wait
+helm install stable/sentry --name sentry --namespace sentry -f helm-config/sentry.yaml --wait
 ```

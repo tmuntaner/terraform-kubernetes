@@ -20,7 +20,7 @@ EOF
 cfssl gencert \
   -ca=data/keys/ca.pem \
   -ca-key=data/keys/ca-key.pem \
-  -config=ca-config.json \
+  -config=cfssl-config.json \
   -hostname=$ETCD_HOSTS,127.0.0.1 \
   -profile=kubernetes \
   etcd-csr.json | cfssljson -bare etcd

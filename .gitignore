@@ -8,3 +8,6 @@ terraform.tfvars
 
 cloud.conf
 *.pem
+
+*.iml
+.idea

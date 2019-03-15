@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # api certificate
 
 cat > kubernetes-csr.json <<EOF
@@ -22,7 +23,7 @@ EOF
 cfssl gencert \
   -ca=data/keys/ca.pem \
   -ca-key=data/keys/ca-key.pem \
-  -config=ca-config.json \
+  -config=cfssl-config.json \
   -hostname=10.32.0.1,${CONTROLLER_HOSTS},${KUBERNETES_PUBLIC_ADDRESS},${KUBERNETES_INTERNAL_ADDRESS},127.0.0.1,kubernetes.default \
   -profile=kubernetes \
   kubernetes-csr.json | cfssljson -bare kubernetes
@@ -55,7 +56,7 @@ EOF
 cfssl gencert \
   -ca=data/keys/ca.pem \
   -ca-key=data/keys/ca-key.pem \
-  -config=ca-config.json \
+  -config=cfssl-config.json \
   -profile=kubernetes \
   service-account-csr.json | cfssljson -bare service-account
 
@@ -107,7 +108,7 @@ EOF
 cfssl gencert \
   -ca=data/keys/ca.pem \
   -ca-key=data/keys/ca-key.pem \
-  -config=ca-config.json \
+  -config=cfssl-config.json \
   -profile=kubernetes \
   admin-csr.json | cfssljson -bare admin
 
@@ -159,7 +160,7 @@ EOF
 cfssl gencert \
   -ca=data/keys/ca.pem \
   -ca-key=data/keys/ca-key.pem \
-  -config=ca-config.json \
+  -config=cfssl-config.json \
   -profile=kubernetes \
   kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
 
@@ -211,7 +212,7 @@ EOF
 cfssl gencert \
   -ca=data/keys/ca.pem \
   -ca-key=data/keys/ca-key.pem \
-  -config=ca-config.json \
+  -config=cfssl-config.json \
   -profile=kubernetes \
   kube-scheduler-csr.json | cfssljson -bare kube-scheduler
 

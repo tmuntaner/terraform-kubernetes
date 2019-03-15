@@ -50,7 +50,7 @@ spec:
       hostNetwork: true
       containers:
         - name: driver-registrar
-          image: quay.io/k8scsi/driver-registrar:v0.3.0
+          image: quay.io/k8scsi/driver-registrar:v0.4.1
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
@@ -76,13 +76,12 @@ spec:
             capabilities:
               add: ["SYS_ADMIN"]
             allowPrivilegeEscalation: true
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:v0.3.0
-          args:
+          image: docker.io/k8scloudprovider/cinder-csi-plugin:1.13.1
+          args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
             - "--endpoint=$(CSI_ENDPOINT)"
-            - "--cloud-config=/etc/cloud/cloud-config.conf"
-            - "--v=2"
+            - "--cloud-config=$(CLOUD_CONFIG)"
           env:
             - name: NODE_ID
               valueFrom:
@@ -90,6 +89,8 @@ spec:
                   fieldPath: spec.nodeName
             - name: CSI_ENDPOINT
               value: unix://csi/csi.sock
+            - name: CLOUD_CONFIG
+              value: /etc/cloud/cloud-config.conf
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /etc/ssl/certs/cloud-trust.pem

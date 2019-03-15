@@ -20,7 +20,7 @@ EOF
 cfssl gencert \
     -ca=data/keys/ca.pem \
     -ca-key=data/keys/ca-key.pem \
-    -config=ca-config.json \
+    -config=cfssl-config.json \
     -hostname=${instance_hostname},${instance_ip} \
     -profile=kubernetes \
     ${instance}-csr.json | cfssljson -bare ${instance}

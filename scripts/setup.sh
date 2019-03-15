@@ -1,4 +1,4 @@
-cat > ca-config.json <<EOF
+cat > cfssl-config.json <<EOF
 {
   "signing": {
     "default": {

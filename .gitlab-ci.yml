@@ -23,12 +23,21 @@ before_script:
 
 stages:
   - cleanup_images
+  - build_images
   - validate
   - etcd_deploy
   - full_deploy
 
 delete_images:
   stage: cleanup_images
+  image:
+    name: tmuntaner/openstackclient
+    entrypoint: [""]
+  script:
+    - if openstack image list | grep kubernetes-base; then openstack image delete kubernetes-base; fi
+
+build_images:
+  stage: build_images
   image:
     name: tmuntaner/openstackclient
     entrypoint: [""]

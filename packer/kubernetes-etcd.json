@@ -2,7 +2,7 @@
   "builders": [
     {
       "type": "openstack",
-      "ssh_username": "opensuse",
+      "ssh_username": "sles",
       "image_name": "kubernetes-etcd",
       "source_image_name": "kubernetes-base",
       "flavor": "m1.small",

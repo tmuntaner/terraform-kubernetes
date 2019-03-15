@@ -22,7 +22,7 @@ EOF
 cfssl gencert \
   -ca=data/keys/ca.pem \
   -ca-key=data/keys/ca-key.pem \
-  -config=ca-config.json \
+  -config=cfssl-config.json \
   -profile=kubernetes \
   kube-proxy-csr.json | cfssljson -bare kube-proxy
 
@@ -76,7 +76,7 @@ EOF
 cfssl gencert \
   -ca=data/keys/ca.pem \
   -ca-key=data/keys/ca-key.pem \
-  -config=ca-config.json \
+  -config=cfssl-config.json \
   -profile=kubernetes \
   cloud-controller-manager-csr.json | cfssljson -bare cloud-controller-manager
 

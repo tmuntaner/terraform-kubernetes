@@ -1,5 +1,12 @@
 ingress:
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   enabled: true
   path: /
   hosts:
-    - kubernetes-dashboard.scc-incubator.scc.suse.de
+    - kubernetes-dashboard.tmuntaner.scc.suse.de
+
+  tls:
+    - secretName: kubernetes-dashboard-tls
+      hosts:
+        - kubernetes-dashboard.tmuntaner.scc.suse.de
