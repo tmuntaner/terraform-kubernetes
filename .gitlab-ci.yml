@@ -1,7 +1,7 @@
 # Entrypoint is needed as image by default sets `terraform` binary as an
 # entrypoint.
 image:
-  name: hashicorp/terraform:0.11.10
+  name: tmuntaner/terraform
   entrypoint: [""]
 
 variables:

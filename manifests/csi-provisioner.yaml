@@ -19,8 +19,21 @@ rules:
     resources: ["storageclasses"]
     verbs: ["get", "list", "watch"]
   - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["csi.storage.k8s.io"]
+    resources: ["csinodeinfos"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
     resources: ["events"]
     verbs: ["list", "watch", "create", "update", "patch"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshots"]
+    verbs: ["get", "list"]
+  - apiGroups: ["snapshot.storage.k8s.io"]
+    resources: ["volumesnapshotcontents"]
+    verbs: ["get", "list"]
+
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
@@ -38,8 +51,8 @@ roleRef:
 kind: Service
 apiVersion: v1
 metadata:
-  name: csi-provisioner-cinderplugin
   namespace: kube-system
+  name: csi-provisioner-cinderplugin
   labels:
     app: csi-provisioner-cinderplugin
 spec:
@@ -51,13 +64,16 @@ spec:
 
 ---
 kind: StatefulSet
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 metadata:
   name: csi-provisioner-cinderplugin
   namespace: kube-system
 spec:
   serviceName: "csi-provisioner-cinderplugin"
   replicas: 1
+  selector:
+    matchLabels:
+      app: csi-provisioner-cinderplugin
   template:
     metadata:
       labels:
@@ -66,7 +82,7 @@ spec:
       serviceAccount: csi-provisioner
       containers:
         - name: csi-provisioner
-          image: quay.io/k8scsi/csi-provisioner:v0.4.1
+          image: quay.io/k8scsi/csi-provisioner:v1.0.1
           args:
             - "--provisioner=csi-cinderplugin"
             - "--csi-address=$(ADDRESS)"
@@ -78,13 +94,13 @@ spec:
             - name: socket-dir
               mountPath: /var/lib/csi/sockets/pluginproxy/
         - name: cinder
-          image: docker.io/k8scloudprovider/cinder-csi-plugin:1.13.1
-          args:
+          image: docker.io/k8scloudprovider/cinder-csi-plugin:v1.14.0
+          args :
             - /bin/cinder-csi-plugin
             - "--nodeid=$(NODE_ID)"
             - "--endpoint=$(CSI_ENDPOINT)"
+            - "--cluster=$(CLUSTER_NAME)"
             - "--cloud-config=$(CLOUD_CONFIG)"
-            - "--v=2"
           env:
             - name: NODE_ID
               valueFrom:
@@ -94,6 +110,8 @@ spec:
               value: unix://csi/csi.sock
             - name: CLOUD_CONFIG
               value: /etc/cloud/cloud-config.conf
+            - name: CLUSTER_NAME
+              value: kubernetes
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
             - mountPath: /etc/ssl/certs/cloud-trust.pem
