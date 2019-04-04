@@ -21,12 +21,12 @@ before_script:
   - echo $ca_key | base64 -di > data/keys/ca-key.pem;
   - echo $ca | base64 -di > data/keys/ca.pem;
 
-stages:
-  - cleanup_images
-  - build_images
-  - validate
-  - etcd_deploy
-  - full_deploy
+#stages:
+#  - cleanup_images
+#  - build_images
+#  - validate
+#  - etcd_deploy
+#  - full_deploy
 
 delete_images:
   stage: cleanup_images
