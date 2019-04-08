@@ -4,7 +4,7 @@ locals {
 }
 
 resource "openstack_compute_secgroup_v2" "main" {
-  name        = "${var.cluster_name}-kubernetes-controller"
+  name        = "${terraform.workspace}-kubernetes-controller"
   description = "kubernetes controller"
 
   rule {
@@ -38,7 +38,7 @@ resource "openstack_compute_secgroup_v2" "main" {
 
 resource "openstack_compute_instance_v2" "main" {
   count           = "${var.instance_count}"
-  name            = "${var.cluster_name}-kubernetes-controller-${count.index}"
+  name            = "${terraform.workspace}-kubernetes-controller-${count.index}"
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
   security_groups = ["${openstack_compute_secgroup_v2.main.name}"]
@@ -154,7 +154,6 @@ resource "null_resource" "provision" {
 
   provisioner "file" {
     source      = "../../data/config/encryption-config.yaml"
-    source      = "tmp/encryption-config.yaml"
     destination = "encryption-config.yaml"
   }
 
@@ -190,7 +189,7 @@ CMD
 # Load Balancer
 
 resource "openstack_networking_secgroup_v2" "kubernetes_lb" {
-  name        = "${var.cluster_name}-kubernetes-lb"
+  name        = "${terraform.workspace}-kubernetes-lb"
   description = "Kubernetes Load Balancer Security Group"
 }
 
@@ -210,7 +209,7 @@ resource "openstack_networking_floatingip_v2" "kubernetes_api" {
 }
 
 resource "openstack_lb_loadbalancer_v2" "kubernetes_lb" {
-  name               = "${var.cluster_name}-kubernetes"
+  name               = "${terraform.workspace}-kubernetes"
   vip_subnet_id      = "${var.subnet_id}"
   security_group_ids = ["${openstack_networking_secgroup_v2.kubernetes_lb.id}"]
 }
@@ -222,7 +221,7 @@ resource "openstack_lb_pool_v2" "kubernetes_api" {
 }
 
 resource "openstack_lb_listener_v2" "kubernetes_api" {
-  name            = "${var.cluster_name}-kubernetes-api-listener"
+  name            = "${terraform.workspace}-kubernetes-api-listener"
   protocol        = "TCP"
   protocol_port   = 6443
   loadbalancer_id = "${openstack_lb_loadbalancer_v2.kubernetes_lb.id}"
@@ -230,7 +229,7 @@ resource "openstack_lb_listener_v2" "kubernetes_api" {
 
 resource "openstack_lb_member_v2" "kubernetes_api" {
   count         = "${var.instance_count}"
-  name          = "${var.cluster_name}-kubernetes-api-${count.index}"
+  name          = "${terraform.workspace}-kubernetes-api-${count.index}"
   pool_id       = "${openstack_lb_pool_v2.kubernetes_api.id}"
   address       = "${element(openstack_compute_instance_v2.main.*.network.0.fixed_ip_v4, count.index)}"
   protocol_port = 6443

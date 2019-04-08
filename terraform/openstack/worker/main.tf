@@ -1,5 +1,5 @@
 resource "openstack_compute_secgroup_v2" "main" {
-  name        = "${var.cluster_name}-kubernetes-worker"
+  name        = "${terraform.workspace}-kubernetes-worker"
   description = "kubernetes worker"
 
   rule {
@@ -33,7 +33,7 @@ resource "openstack_compute_secgroup_v2" "main" {
 
 resource "openstack_compute_instance_v2" "main" {
   count           = "${var.instance_count}"
-  name            = "${var.cluster_name}-kubernetes-worker-${count.index}"
+  name            = "${terraform.workspace}-kubernetes-worker-${count.index}"
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
   security_groups = ["${openstack_compute_secgroup_v2.main.name}"]

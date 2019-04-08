@@ -4,7 +4,6 @@ variable "openstack_password" {}
 variable "openstack_auth_url" {}
 variable "regcode" {}
 variable "keypair" {}
-variable "cluster_name" {}
 
 variable "subnet_cidr" {
   description = "CIDR for the VPC"

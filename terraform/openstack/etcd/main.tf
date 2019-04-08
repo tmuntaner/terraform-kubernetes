@@ -24,7 +24,7 @@ data "template_file" "etcd_node" {
 }
 
 resource "openstack_compute_secgroup_v2" "etcd" {
-  name        = "${var.cluster_name}-kubernetes-etcd"
+  name        = "${terraform.workspace}-kubernetes-etcd"
   description = "kubernetes etcd"
 
   rule {
@@ -58,7 +58,7 @@ resource "openstack_compute_secgroup_v2" "etcd" {
 
 resource "openstack_compute_instance_v2" "main" {
   count           = 3
-  name            = "${var.cluster_name}-kubernetes-etcd-${count.index}"
+  name            = "${terraform.workspace}-kubernetes-etcd-${count.index}"
   flavor_name     = "m1.large"
   key_pair        = "${var.keypair}"
   security_groups = ["${openstack_compute_secgroup_v2.etcd.name}"]
