@@ -35,3 +35,8 @@
   service:
     name: kube-scheduler
     enabled: yes
+
+- name: Create the encryption config
+  template:
+    src: encryption-config.yaml.j2
+    dest: /var/lib/kubernetes/encryption-config.yaml

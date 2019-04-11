@@ -47,12 +47,13 @@ module "etcd" {
 }
 
 module "controller" {
-  source                     = "./controller"
-  keypair                    = "${var.keypair}"
-  network_name               = "${module.network.network_name}"
-  etcd_instance_ip_addresses = "${module.etcd.etcd_instance_ip_addresses}"
-  subnet_id                  = "${module.network.subnet_id}"
-  image_id                   = "${var.controller_image_id}"
+  source                       = "./controller"
+  keypair                      = "${var.keypair}"
+  network_name                 = "${module.network.network_name}"
+  etcd_instance_ip_addresses   = "${module.etcd.etcd_instance_ip_addresses}"
+  subnet_id                    = "${module.network.subnet_id}"
+  image_id                     = "${var.controller_image_id}"
+  kubernetes_encryption_secret = "${var.kubernetes_encryption_secret}"
 }
 
 module "worker" {

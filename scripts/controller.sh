@@ -64,26 +64,6 @@ rm service-account-csr.json service-account.csr
 mv service-account-key.pem data/keys
 mv service-account.pem data/keys
 
-# encryption config
-
-SECRET=`head -c 32 /dev/urandom | base64`
-
-cat > encryption-config.yaml <<EOF
-kind: EncryptionConfig
-apiVersion: v1
-resources:
-  - resources:
-      - secrets
-    providers:
-      - aescbc:
-          keys:
-            - name: key1
-              secret: ${SECRET}
-      - identity: {}
-EOF
-
-mv encryption-config.yaml data/config
-
 # Admin config
 
 cat > admin-csr.json <<EOF

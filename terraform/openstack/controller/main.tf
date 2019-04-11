@@ -152,14 +152,9 @@ resource "null_resource" "provision" {
     destination = "kube-scheduler.kubeconfig"
   }
 
-  provisioner "file" {
-    source      = "../../data/config/encryption-config.yaml"
-    destination = "encryption-config.yaml"
-  }
-
   provisioner "remote-exec" {
     inline = [
-      "sudo mv ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.pem service-account.pem encryption-config.yaml /var/lib/kubernetes/",
+      "sudo mv ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.pem service-account.pem /var/lib/kubernetes/",
       "sudo mv kube-controller-manager.kubeconfig /var/lib/kubernetes/",
       "sudo mv kube-scheduler.kubeconfig /var/lib/kubernetes/",
     ]
@@ -167,13 +162,14 @@ resource "null_resource" "provision" {
 
   provisioner "local-exec" {
     command = <<CMD
-ansible-playbook -i $NODE_IP, -u sles -s playbook-controller.yml -e etcd_cluster="$ETCD_CLUSTER"
+ansible-playbook -i $NODE_IP, -u sles -s playbook-controller.yml -e etcd_cluster="$ETCD_CLUSTER" -e kubernetes_encryption_secret="$ENCRYPTION_SECRET"
 CMD
 
     working_dir = "../../ansible"
 
     environment {
       ANSIBLE_HOST_KEY_CHECKING = "False"
+      ENCRYPTION_SECRET         = "${var.kubernetes_encryption_secret}"
       ETCD_CLUSTER              = "${join(",", local.etcd_nodes)}"
       NODE_IP                   = "${element(openstack_networking_floatingip_v2.main.*.address, count.index)}"
     }

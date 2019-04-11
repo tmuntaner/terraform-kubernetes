@@ -10,3 +10,5 @@ variable "etcd_instance_ip_addresses" {
 variable "instance_count" {
   default = 3
 }
+
+variable "kubernetes_encryption_secret" {}

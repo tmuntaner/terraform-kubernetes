@@ -18,3 +18,4 @@ variable "etcd_data_volume_3" {}
 variable "etcd_image_id" {}
 variable "controller_image_id" {}
 variable "worker_image_id" {}
+variable "kubernetes_encryption_secret" {}
